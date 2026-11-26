@@ -36,10 +36,12 @@ const toc = [{ key: 'in-brief', label: 'In brief', n: issue.brief.length }, ...g
           </select>
         </label>
       </div>
-      <div class="dont">
-        <p class="label">Don't miss today</p>
-        <ul>{issue.dontMiss.map((d) => <li>{d}</li>)}</ul>
-      </div>
+      {issue.dontMiss.length > 0 && (
+        <div class="dont">
+          <p class="label">Don't miss today</p>
+          <ul>{issue.dontMiss.map((d) => <li>{d}</li>)}</ul>
+        </div>
+      )}
     </aside>
 
     <article>

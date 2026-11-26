@@ -18,7 +18,7 @@ npm run dev
 
 ## Content
 
-Each issue is one JSON file in `src/content/issues/`. The format is in [docs/ISSUE_FORMAT.md](docs/ISSUE_FORMAT.md). `npm run build` validates every issue before building. The daily publishing routine is in [docs/DAILY_RUN.md](docs/DAILY_RUN.md).
+Each issue is one JSON file in `src/content/issues/`. The format is in [docs/ISSUE_FORMAT.md](docs/ISSUE_FORMAT.md). `npm run build` validates every issue before building. Issues are published automatically every morning by GitHub Actions; see [docs/DAILY_RUN.md](docs/DAILY_RUN.md).
 
 Branding text and footer links are in `src/lib/site.ts`. Section names are in `src/lib/data.ts` and `scripts/validate.mjs`.
 

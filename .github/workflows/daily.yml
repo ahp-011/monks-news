@@ -1,0 +1,55 @@
+name: Daily issue
+
+# Publishes the day's Monks News issue before 9:00 in Dhaka (UTC+6).
+# 01:10 UTC = 07:10 Dhaka (main run); 02:13 UTC = 08:13 Dhaka (backup, does nothing if
+# the issue already exists). GitHub can start scheduled runs a few minutes late.
+on:
+  schedule:
+    - cron: '10 1 * * *'
+    - cron: '13 2 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-issue
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Collect, write and validate today's issue
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/daily/publish.mjs
+
+      - name: Check the site builds
+        run: npm run build
+
+      - name: Publish
+        run: |
+          if [ -z "$(git status --porcelain src/content/issues)" ]; then
+            echo "No new issue to publish."
+            exit 0
+          fi
+          git config user.name "Monks News"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/content/issues
+          NUM=$(node -e "const f=require('fs');const d=f.readdirSync('src/content/issues').sort().pop();const j=JSON.parse(f.readFileSync('src/content/issues/'+d));console.log(String(j.number).padStart(3,'0')+', '+j.date)")
+          git commit -m "Issue No. $NUM"
+          for i in 1 2 3; do git pull --rebase origin main && git push origin HEAD:main && exit 0; sleep 10; done
+          exit 1

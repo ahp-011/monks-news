@@ -91,6 +91,7 @@ const storyTeam = (id: string) => issue.stories.find((s) => s.id === id)?.team ?
     </div>
   </section>
 
+  {tools.length > 0 && (
   <section class="section section--band">
     <div class="wrap">
       <div class="sec-head">
@@ -114,6 +115,7 @@ const storyTeam = (id: string) => issue.stories.find((s) => s.id === id)?.team ?
       </div>
     </div>
   </section>
+  )}
 
   <section class="section">
     <div class="wrap">

@@ -14,7 +14,7 @@ export interface Tool {
 }
 export interface BriefItem { story: string; title: string; text: string }
 export interface Issue {
-  number: number; date: string; headline: string;
+  number: number; date: string; headline: string; mode?: 'links';
   dontMiss: string[]; brief: BriefItem[]; stories: Story[]; tools: Tool[];
 }
 

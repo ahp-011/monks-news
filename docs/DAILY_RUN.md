@@ -1,37 +1,30 @@
-# Daily run: the morning brief
+# Daily run: how the morning issue gets published
 
-## The job
+Designers and developers at Design Monks and Dev Monks start work at 9:00 in Dhaka. Before that, Monks News has to carry the hottest, most useful design, development and AI news from **today and yesterday**, with links to go deeper.
 
-Designers and developers at Design Monks and Dev Monks start work at 9:00 in Dhaka. Before they start, they open Monks News to catch up on the hottest design, development and AI news from **today and yesterday**. If a story grabs them, they go deeper from there.
+It runs by itself in **GitHub Actions** (`.github/workflows/daily.yml`). Nobody needs to do anything.
 
-So each issue must be:
+| Dhaka time | What happens |
+|---|---|
+| 07:10 | Main run: collect, write, validate, publish. Vercel deploys within ~2 minutes. |
+| 08:13 | Backup run: publishes only if the 07:10 run failed. |
 
-- **Fresh.** What broke in the last 24–48 hours, not last week. At least 60% of stories must be from today or yesterday (Dhaka date). Nothing older than 7 days, except Learning corner and Today's experiment.
-- **Hot.** What people in design and dev are actually talking about right now. Prefer stories with clear trend signals, and say what the signal is in `buzz`.
-- **Useful.** Every story passes this test: *would a designer or developer here do something differently today because they read it?* Skip general business news, gossip, stock moves and announcements with nothing to try. If a big industry story has no practical angle, keep it short or leave it out.
-- **Deep when wanted.** Featured stories (and ideally most others) carry `deeper` links: the official docs, changelog, tutorial, demo, repo or best discussion thread. Not more news coverage of the same thing.
+## How an issue is made (`scripts/daily/publish.mjs`)
 
-## Where to look for what's hot (check in this order)
+1. **Collect.** Items from the last 48 hours (96 if it's a slow day) from the feeds in `scripts/daily/sources.mjs`: official changelogs and blogs (Figma, Vercel, Next.js, React, Chrome, WebKit, GitHub, OpenAI, Google, Cursor, Expo, Supabase, Apple, Android and more), design and dev publications, Hacker News stories with 60+ points, fast-rising new GitHub repos and Product Hunt launches. Shopping deals are filtered out, and links used in the last three issues are skipped.
+2. **Write.** Google Gemini (free tier) picks 18–26 of the hottest, most useful items and writes the headline, summary, "Why it matters", "For the team", "In brief", "Don't miss today" and tool ratings. It can only use the collected items: links, dates and trend signals (points, stars) are always taken from the items themselves, never from the AI.
+3. **Check.** `scripts/validate.mjs` enforces freshness (60% from the last two days), team actions on practical stories and correct structure. Anything the AI gets wrong is repaired or dropped.
+4. **Fallback.** If Gemini is down, over quota or produces an invalid issue, a links-only issue is published instead: the top-ranked items with their own descriptions, balanced across sections. A day is never skipped.
+5. **Publish.** The new file is committed to `main`; Vercel redeploys.
 
-1. **Trend signals:** Hacker News front page and "best" of the last day, GitHub trending (daily), Product Hunt top launches today and yesterday, r/webdev, r/reactjs, r/UXDesign, r/FigmaDesign, r/LocalLLaMA, r/ClaudeAI, Dribbble and Behance popular, notable posts on X and LinkedIn by well-known designers and engineers.
-2. **Changelogs and release notes** of tools the teams use: Figma (release notes, Config, community), Framer, Webflow, Adobe, Canva, Spline, Rive; Vercel and Next.js, React, Vite, Tailwind, shadcn/ui, Node, TypeScript, Expo and React Native, Flutter, Swift and Kotlin, Supabase, Chrome and web.dev, Safari; Anthropic, OpenAI, Google (Gemini, AI Studio), Cursor, GitHub (Copilot), Replit, Lovable, v0, Bolt.
-3. **Trusted editorial:** Smashing Magazine, UX Collective, Nielsen Norman Group, Sidebar.io, CSS-Tricks, The Verge, TechCrunch, Ars Technica, Simon Willison's blog, Latent Space, It's Nice That and Brand New (for branding).
+## Settings (GitHub → repo → Settings → Secrets and variables → Actions)
 
-Search broadly. Open the primary source to confirm every fact you state. If two sources disagree, say so or leave the number out.
+- Secret `GEMINI_API_KEY`: a free key from https://aistudio.google.com/apikey. Without it, every issue is links-only.
+- Variable `GEMINI_MODEL` (optional): force a model name. By default the newest available Gemini Flash model is picked automatically, so it keeps working as Google releases new models.
 
-## Steps
+## Running or fixing by hand
 
-1. Work on the `main` branch of this repo. Pull the latest.
-2. Today's date is the current date in **Asia/Dhaka**. If `src/content/issues/<today>.json` already exists, stop: it has been published.
-3. Read `docs/ISSUE_FORMAT.md`. Read the last two issues so nothing is repeated (a story returns only with real new information) and the number continues (`number` = latest + 1).
-4. Research as above. Running several research subagents in parallel (design and branding / web, mobile and SaaS / AI and tools / trend signals) works well; then pick the best 20–30.
-5. Write `src/content/issues/<today>.json`.
-   - Lead and featured stories are the three hottest *and* most useful items of the day.
-   - "In brief" is the five things everyone should know before 9:00.
-   - "Don't miss today" is three concrete actions someone can do in under 30 minutes.
-   - Tools: 4–6 tools worth trying, launched or updated recently, rated honestly out of 10.
-   - Every story has `published`, real `sources`, and (for practical sections) `forTeam`.
-6. Run `npm ci` (first time) and `npm run build`. The validator enforces the freshness and usefulness rules; fix and rebuild until it passes. Never weaken the validator to get through.
-7. Commit only the new issue file with message `Issue No. NNN, <date>` and push to `main`. Vercel redeploys within a minute or two.
-
-If there is genuinely too little fresh, verified news, publish a shorter issue (15 stories is fine) rather than padding it with old or vague items. Never invent facts, numbers, quotes or links.
+- Run now: GitHub → Actions → Daily issue → Run workflow.
+- Re-make today's issue: delete `src/content/issues/<today>.json` on `main`, then run the workflow.
+- Add or remove a source: edit `scripts/daily/sources.mjs`.
+- Run locally: `GEMINI_API_KEY=... node scripts/daily/publish.mjs`.

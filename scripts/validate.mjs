@@ -15,7 +15,8 @@ for (const f of files) {
   if (!Number.isInteger(d.number) || d.number < 1) e('number must be a positive integer');
   if (numbers.has(d.number)) e(`number ${d.number} also used by ${numbers.get(d.number)}`); else numbers.set(d.number, f);
   if (!d.headline) e('missing headline');
-  if (!Array.isArray(d.dontMiss) || !d.dontMiss.length) e('dontMiss must be a non-empty array');
+  const links = d.mode === 'links'; // no-AI fallback issue: no team notes, tools or actions
+  if (!Array.isArray(d.dontMiss) || (!links && !d.dontMiss.length)) e('dontMiss must be a non-empty array');
   if (!Array.isArray(d.stories) || !d.stories.length) { e('stories must be a non-empty array'); continue; }
   const ids = new Set();
   for (const s of d.stories) {
@@ -41,7 +42,7 @@ for (const f of files) {
       if (age < 0) w(`published ${s.published} is after the issue date`);
       if (age > 7 && !['learning','experiment'].includes(s.section)) w(`published ${s.published} is ${age} days old; only learning/experiment may be older than 7 days`);
       if (age <= 2) fresh++;
-      if (ACTIONABLE.includes(s.section) && !s.forTeam) w('needs "forTeam": what a designer or developer should do with this');
+      if (!links && ACTIONABLE.includes(s.section) && !s.forTeam) w('needs "forTeam": what a designer or developer should do with this');
       for (const x of s.deeper ?? []) if (!/^https?:\/\//.test(x.url ?? '') || !x.name) w('each "deeper" link needs name and url');
     }
     const share = fresh / d.stories.length;

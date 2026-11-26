@@ -1,6 +1,6 @@
 # Daily run: how the morning issue gets published
 
-Designers and developers at Design Monks and Dev Monks start work at 9:00 in Dhaka. Before that, Monks News has to carry the hottest, most useful design, development and AI news from **today and yesterday**, with links to go deeper.
+Designers and developers at Design Monks and Dev Monks start work at 9:00 in Dhaka. Before that, Monks News has to carry the hottest, most useful design, development and AI news from the **last 24 hours**, with links to go deeper.
 
 It runs by itself in **GitHub Actions** (`.github/workflows/daily.yml`). Nobody needs to do anything.
 
@@ -11,9 +11,9 @@ It runs by itself in **GitHub Actions** (`.github/workflows/daily.yml`). Nobody 
 
 ## How an issue is made (`scripts/daily/publish.mjs`)
 
-1. **Collect.** Items from the last 48 hours (96 if it's a slow day) from the feeds in `scripts/daily/sources.mjs`: official changelogs and blogs (Figma, Vercel, Next.js, React, Chrome, WebKit, GitHub, OpenAI, Google, Cursor, Expo, Supabase, Apple, Android and more), design and dev publications, Hacker News stories with 60+ points, fast-rising new GitHub repos and Product Hunt launches. Shopping deals are filtered out, and links used in the last three issues are skipped.
+1. **Collect.** Items from the last 24 hours (48 if it's a slow day) from the feeds in `scripts/daily/sources.mjs`: official changelogs and blogs (Figma, Vercel, Next.js, React, Chrome, WebKit, GitHub, OpenAI, Google, Cursor, Expo, Supabase, Apple, Android and more), design and dev publications, Hacker News stories with 60+ points, fast-rising new GitHub repos and Product Hunt launches. Shopping deals are filtered out, and links used in the last three issues are skipped.
 2. **Write.** Google Gemini (free tier) picks 18–26 of the hottest, most useful items and writes the headline, summary, "Why it matters", "For the team", "In brief", "Don't miss today" and tool ratings. It can only use the collected items: links, dates and trend signals (points, stars) are always taken from the items themselves, never from the AI.
-3. **Check.** `scripts/validate.mjs` enforces freshness (60% from the last two days), team actions on practical stories and correct structure. Anything the AI gets wrong is repaired or dropped.
+3. **Check.** `scripts/validate.mjs` enforces freshness (60% dated today or yesterday), team actions on practical stories and correct structure. Anything the AI gets wrong is repaired or dropped.
 4. **Fallback.** If Gemini is down, over quota or produces an invalid issue, a links-only issue is published instead: the top-ranked items with their own descriptions, balanced across sections. A day is never skipped.
 5. **Publish.** The new file is committed to `main`; Vercel redeploys.
 

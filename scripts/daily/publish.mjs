@@ -1,6 +1,6 @@
 // Monks News daily publisher. Runs in GitHub Actions every morning (see .github/workflows/daily.yml).
 //
-//   1. Collect: real items from the last ~48 hours (feeds, Hacker News, GitHub, Product Hunt).
+//   1. Collect: real items from the last 24 hours (48 on a slow day) (feeds, Hacker News, GitHub, Product Hunt).
 //   2. Write:   Gemini picks the hottest, most useful stories and writes the text. It may only
 //               use the collected items; links and dates always come from the items themselves.
 //   3. Fallback: if Gemini is unavailable, publish a links-only issue so no day is missed.
@@ -113,7 +113,7 @@ const BRIEF = `You are the editor of Monks News, the morning brief that designer
 - Dev Monks (team "dev"): AI engineering (agents, custom LLM solutions, RAG, automation); SaaS platforms (multi-tenant, portals, MVPs, backend and APIs); mobile apps (iOS, Android, cross-platform).
 - Client industries: FinTech, EdTech, travel, fitness, health, FMCG, SaaS startups.
 
-Pick the hottest and most USEFUL items from the candidates. The test for every story: would a designer or developer here do something differently today because they read it? Skip business gossip, stock moves, politics, lawsuits and announcements with nothing to try, unless they truly change the work. Prefer items from today and yesterday and items with high scores. Use ONLY facts in the candidate text; never invent numbers, dates, quotes or features. If a claim is a vendor claim, say so. Plain, specific sentences, sentence-case headlines, no hype words, no emoji.
+Pick the hottest and most USEFUL items from the candidates. The test for every story: would a designer or developer here do something differently today because they read it? Skip business gossip, stock moves, politics, lawsuits and announcements with nothing to try, unless they truly change the work. Prefer the newest items (last 24 hours) and items with high scores. Use ONLY facts in the candidate text; never invent numbers, dates, quotes or features. If a claim is a vendor claim, say so. Plain, specific sentences, sentence-case headlines, no hype words, no emoji.
 
 Sections: industry (AI industry news), design-ux (product design and UX), branding (branding and identity), development (web, mobile and SaaS), ai-engineering (agents, LLM APIs, RAG, automation), tools (new AI tools), trends (trends to watch), inspiration (design inspiration), open-source (GitHub and open source), social (what designers and devs are discussing), learning (guides worth the time), opportunities (client demand, awards, events), experiment (one hands-on task for today, based on a story).`;
 
@@ -207,8 +207,8 @@ function assemble(draft, cands, number, mode) {
       ...(deeper.length ? { deeper } : {}), _cid: c.cid, _score: c.score ?? 0,
     });
   }
-  // freshness: at least 60% from the last two days
-  const freshShare = () => stories.filter((s) => age(byCid.get(s._cid)) <= 2).length / Math.max(1, stories.length);
+  // freshness: at least 60% dated today or yesterday (Dhaka)
+  const freshShare = () => stories.filter((s) => age(byCid.get(s._cid)) <= 1).length / Math.max(1, stories.length);
   while (stories.length > 8 && freshShare() < 0.6) {
     const oldest = [...stories].filter((s) => !s.featured && !['learning', 'experiment'].includes(s.section)).sort((a, b) => a.published.localeCompare(b.published))[0]
       ?? [...stories].sort((a, b) => a.published.localeCompare(b.published))[0];
@@ -292,8 +292,8 @@ async function main() {
   const number = Math.max(0, ...prev.map((p) => p.number)) + 1;
   const recentUrls = new Set(prev.sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3).flatMap((p) => p.stories.flatMap((s) => s.sources.map((x) => x.url))));
 
-  let cands = (await collect(48)).filter((c) => !recentUrls.has(c.url));
-  if (cands.length < 40) { log(`only ${cands.length} items in 48h; widening to 96h`); cands = (await collect(96)).filter((c) => !recentUrls.has(c.url)); }
+  let cands = (await collect(24)).filter((c) => !recentUrls.has(c.url));
+  if (cands.length < 40) { log(`only ${cands.length} items in 24h; widening to 48h`); cands = (await collect(48)).filter((c) => !recentUrls.has(c.url)); }
   log(`${cands.length} candidate items`);
   if (cands.length < 8) throw new Error('too few candidate items; are the sources reachable?');
 

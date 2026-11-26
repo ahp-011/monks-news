@@ -41,7 +41,7 @@ for (const f of files) {
       const age = Math.round((day(d.date) - day(s.published)) / 86400000);
       if (age < 0) w(`published ${s.published} is after the issue date`);
       if (age > 7 && !['learning','experiment'].includes(s.section)) w(`published ${s.published} is ${age} days old; only learning/experiment may be older than 7 days`);
-      if (age <= 2) fresh++;
+      if (age <= 1) fresh++;
       if (!links && ACTIONABLE.includes(s.section) && !s.forTeam) w('needs "forTeam": what a designer or developer should do with this');
       for (const x of s.deeper ?? []) if (!/^https?:\/\//.test(x.url ?? '') || !x.name) w('each "deeper" link needs name and url');
     }

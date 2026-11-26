@@ -18,7 +18,9 @@ export interface Issue {
 export const SECTIONS = [
   { key: 'industry', label: 'AI industry news', short: 'Industry' },
   { key: 'design-ux', label: 'Product design and UX', short: 'Design and UX' },
-  { key: 'development', label: 'Web and app development', short: 'Development' },
+  { key: 'branding', label: 'Branding and identity', short: 'Branding' },
+  { key: 'development', label: 'Web, mobile and SaaS', short: 'Development' },
+  { key: 'ai-engineering', label: 'AI engineering', short: 'AI engineering' },
   { key: 'tools', label: 'New AI tools', short: 'Tools' },
   { key: 'trends', label: 'Trends to watch', short: 'Trends' },
   { key: 'inspiration', label: 'Design inspiration', short: 'Inspiration' },

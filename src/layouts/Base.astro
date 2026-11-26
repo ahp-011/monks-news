@@ -13,7 +13,7 @@ const links = [
   { key: 'archive', href: '/archive/', label: 'Archive' },
   { key: 'tools', href: '/tools/', label: 'Tools' },
 ];
-const footSections = SECTIONS.filter((s) => ['industry', 'design-ux', 'development', 'tools', 'open-source', 'learning'].includes(s.key));
+const footSections = SECTIONS.filter((s) => ['industry', 'design-ux', 'branding', 'development', 'ai-engineering', 'tools', 'learning'].includes(s.key));
 ---
 <!doctype html>
 <html lang="en">
@@ -84,7 +84,8 @@ const footSections = SECTIONS.filter((s) => ['industry', 'design-ux', 'developme
         </div>
         <div><h4>Read</h4><ul><li><a href="/">Today</a></li><li><a href="/archive/">Archive</a></li><li><a href="/tools/">Tools</a></li></ul></div>
         <div><h4>Sections</h4><ul>{footSections.map((s) => <li><a href={url.section(s.key)}>{s.label}</a></li>)}</ul></div>
-        <div><h4>The Monks</h4><ul>{SITE.company.map((c) => <li><a href={c.href} target="_blank" rel="noopener">{c.label}</a></li>)}</ul></div>
+        <div><h4>The Monks</h4><ul>{SITE.company.map((c) => <li><a href={c.href} target="_blank" rel="noopener">{c.label}</a></li>)}</ul>
+          <h4 style="margin-top:22px">Follow</h4><ul>{SITE.social.map((c) => <li><a href={c.href} target="_blank" rel="noopener">{c.label}</a></li>)}</ul></div>
       </div>
       <div class="foot__bottom mono"><span>{SITE.name}</span><a href="#" data-top>Back to top ↑</a></div>
     </div>

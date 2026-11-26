@@ -186,7 +186,7 @@ a:hover .art svg, .card:hover .art svg { transform: scale(1.035); }
 .no { font: 500 11px var(--mono); background: var(--chip); padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
 
 /* Sections browse */
-.secs { display: grid; grid-template-columns: repeat(6, 1fr); gap: 28px 16px; }
+.secs { display: grid; grid-template-columns: repeat(7, 1fr); gap: 28px 16px; }
 .sec-tile { display: flex; flex-direction: column; gap: 10px; }
 .sec-tile .art { aspect-ratio: 4/3; }
 .sec-tile__row { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; font-weight: 500; }

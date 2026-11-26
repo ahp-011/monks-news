@@ -7,4 +7,11 @@ export const SITE = {
     { label: 'Design Monks', href: 'https://www.designmonks.co/' },
     { label: 'Dev Monks', href: 'https://www.devmonks.co/' },
   ],
+  social: [
+    { label: 'Dribbble', href: 'https://dribbble.com/design_monks' },
+    { label: 'Behance', href: 'https://www.behance.net/designmonksux' },
+    { label: 'Clutch', href: 'https://clutch.co/profile/design-monks' },
+    { label: 'Design Monks on LinkedIn', href: 'https://www.linkedin.com/company/designmonks' },
+    { label: 'Dev Monks on LinkedIn', href: 'https://www.linkedin.com/company/dev-monks/' },
+  ],
 };

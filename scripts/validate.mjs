@@ -1,7 +1,7 @@
 // Checks every issue file against docs/ISSUE_FORMAT.md. Run: npm run validate
 import { readdirSync, readFileSync } from 'node:fs';
 const dir = new URL('../src/content/issues/', import.meta.url);
-const SECTIONS = ['industry','design-ux','development','tools','trends','inspiration','open-source','social','learning','opportunities','experiment'];
+const SECTIONS = ['industry','design-ux','branding','development','ai-engineering','tools','trends','inspiration','open-source','social','learning','opportunities','experiment'];
 const TEAMS = ['design','dev','both'];
 const errors = [];
 const files = readdirSync(dir).filter((f) => f.endsWith('.json')).sort();

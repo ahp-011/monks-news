@@ -47,8 +47,10 @@ The date is the publishing day in Dhaka (Asia/Dhaka). The site is rebuilt from t
 | key            | label                     | covers |
 |----------------|---------------------------|--------|
 | `industry`     | AI industry news          | model launches, funding, policy, big-tech moves |
-| `design-ux`    | Product design and UX     | Figma, design systems, UX research, accessibility, branding |
-| `development`  | Web and app development   | frameworks, Webflow/Framer, React/Next, mobile, browsers, APIs |
+| `design-ux`    | Product design and UX     | Figma, design systems, UX research, accessibility, app/web/dashboard design |
+| `branding`     | Branding and identity     | logo and identity work, brand strategy, type, 3D, motion, social branding |
+| `development`  | Web, mobile and SaaS      | frameworks, Webflow/Framer, React/Next, iOS/Android/cross-platform, SaaS architecture, backend/APIs, browsers |
+| `ai-engineering` | AI engineering          | agents, LLM APIs, RAG, evals, workflow automation, MCP, AI features in products |
 | `tools`        | New AI tools              | new AI products useful to designers or developers |
 | `trends`       | Trends to watch           | longer-arc shifts in design, dev, SaaS, AI |
 | `inspiration`  | Design inspiration        | notable UI, launches, interaction patterns (short) |
@@ -59,6 +61,12 @@ The date is the publishing day in Dhaka (Asia/Dhaka). The site is rebuilt from t
 | `experiment`   | Today's experiment        | one small hands-on task for the team (usually 1 story) |
 
 A normal issue has 20-30 stories spread across all sections, with a healthy mix of `design`, `dev` and `both`.
+
+## Who reads it
+
+- **Design Monks** (team `design`): UI/UX design for apps, websites and dashboards; wireframing, prototyping, interaction and product design; logo and branding (identity, 3D logos, brand strategy, social branding); Webflow and Framer sites.
+- **Dev Monks** (team `dev`): AI engineering (agentic AI, custom LLM solutions, RAG, workflow automation); SaaS platform engineering (multi-tenant, enterprise portals, MVPs, backend and APIs); mobile apps (iOS, Android, cross-platform, IoT companion apps).
+- Client industries both teams serve: FinTech, EdTech, travel and booking, fitness, health, FMCG, SaaS startups. Use these to pick `opportunities` and to make "For the team" actions concrete.
 
 ## Rules
 

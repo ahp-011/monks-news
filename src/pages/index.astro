@@ -7,7 +7,7 @@ import { latest, issues, allStories, SECTIONS, sectionCounts, fmt, url } from '.
 const issue = latest;
 const featured = issue.stories.filter((s) => s.featured).slice(0, 3);
 const [lead, ...side] = featured.length ? featured : issue.stories.slice(0, 3);
-const more = issue.stories.filter((s) => !s.featured && ['industry', 'design-ux', 'development', 'inspiration', 'trends'].includes(s.section));
+const more = issue.stories.filter((s) => !s.featured && ['industry', 'design-ux', 'branding', 'development', 'ai-engineering', 'inspiration', 'trends'].includes(s.section));
 const earlier = issues.slice(1, 7);
 const tools = [...issue.tools].sort((a, b) => b.rating - a.rating);
 const total = issue.stories.length + issue.tools.length;
@@ -145,7 +145,7 @@ const storyTeam = (id: string) => issue.stories.find((s) => s.id === id)?.team ?
       <div class="secs" data-stagger="50">
         {SECTIONS.map((s) => (
           <a class="sec-tile reveal" href={url.section(s.key)}>
-            <Art seed={`section-${s.key}`} team={s.key === 'design-ux' || s.key === 'inspiration' ? 'design' : s.key === 'development' || s.key === 'open-source' ? 'dev' : 'both'} cols={4} rows={3} />
+            <Art seed={`section-${s.key}`} team={['design-ux', 'branding', 'inspiration'].includes(s.key) ? 'design' : ['development', 'ai-engineering', 'open-source'].includes(s.key) ? 'dev' : 'both'} cols={4} rows={3} />
             <span class="sec-tile__row"><span>{s.label}</span><span class="label">{sectionCounts[s.key]}</span></span>
           </a>
         ))}

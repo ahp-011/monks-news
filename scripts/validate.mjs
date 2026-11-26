@@ -28,6 +28,26 @@ for (const f of files) {
     if (!Array.isArray(s.sources) || !s.sources.length) w('needs at least one source');
     for (const src of s.sources ?? []) if (!/^https?:\/\//.test(src.url ?? '')) w(`bad source url "${src.url}"`);
   }
+  // Freshness and usefulness rules (from issue No. 002 on).
+  if (d.number >= 2) {
+    const day = (x) => Date.parse(x + 'T00:00:00Z');
+    const isDate = (x) => /^\d{4}-\d{2}-\d{2}$/.test(x ?? '');
+    let fresh = 0;
+    const ACTIONABLE = ['industry','design-ux','branding','development','ai-engineering','tools','open-source'];
+    for (const s of d.stories) {
+      const w = (m) => e(`story "${s.id}": ${m}`);
+      if (!isDate(s.published)) { w('needs "published" (YYYY-MM-DD, the day the news broke)'); continue; }
+      const age = Math.round((day(d.date) - day(s.published)) / 86400000);
+      if (age < 0) w(`published ${s.published} is after the issue date`);
+      if (age > 7 && !['learning','experiment'].includes(s.section)) w(`published ${s.published} is ${age} days old; only learning/experiment may be older than 7 days`);
+      if (age <= 2) fresh++;
+      if (ACTIONABLE.includes(s.section) && !s.forTeam) w('needs "forTeam": what a designer or developer should do with this');
+      for (const x of s.deeper ?? []) if (!/^https?:\/\//.test(x.url ?? '') || !x.name) w('each "deeper" link needs name and url');
+    }
+    const share = fresh / d.stories.length;
+    if (share < 0.6) e(`only ${fresh} of ${d.stories.length} stories are from the last 2 days; at least 60% must be (today or yesterday)`);
+    for (const s of d.stories.filter((x) => x.featured)) if (!s.deeper?.length) e(`featured story "${s.id}" needs at least one "deeper" link`);
+  }
   const feat = d.stories.filter((s) => s.featured).length;
   if (feat < 1 || feat > 3) e(`expected 1-3 featured stories, found ${feat}`);
   for (const b of d.brief ?? []) if (!ids.has(b.story)) e(`brief item points to unknown story "${b.story}"`);

@@ -2,7 +2,7 @@
 import Base from '../layouts/Base.astro';
 import Art from '../components/Art.astro';
 import TeamTag from '../components/TeamTag.astro';
-import { latest, issues, allStories, SECTIONS, sectionCounts, fmt, url } from '../lib/data';
+import { freshness, latest, issues, allStories, SECTIONS, sectionCounts, fmt, url } from '../lib/data';
 
 const issue = latest;
 const featured = issue.stories.filter((s) => s.featured).slice(0, 3);
@@ -33,7 +33,7 @@ const storyTeam = (id: string) => issue.stories.find((s) => s.id === id)?.team ?
       <a class="card card--lead reveal" href={url.story(issue.date, lead.id)} data-team={lead.team}>
         <Art seed={lead.id} team={lead.team} reveal cols={12} rows={6} />
         <div class="card__body">
-          <TeamTag team={lead.team} section={lead.section} />
+          <TeamTag team={lead.team} section={lead.section} fresh={freshness(lead.published, issue.date)} />
           <h2 class="card__title">{lead.title}</h2>
           <p class="summary clamp2">{lead.summary}</p>
         </div>
@@ -43,7 +43,7 @@ const storyTeam = (id: string) => issue.stories.find((s) => s.id === id)?.team ?
           <a class="card reveal" href={url.story(issue.date, s.id)} data-team={s.team}>
             <Art seed={s.id} team={s.team} reveal cols={9} rows={3} />
             <div class="card__body">
-              <TeamTag team={s.team} section={s.section} />
+              <TeamTag team={s.team} section={s.section} fresh={freshness(s.published, issue.date)} />
               <h2 class="card__title">{s.title}</h2>
             </div>
           </a>
@@ -82,7 +82,7 @@ const storyTeam = (id: string) => issue.stories.find((s) => s.id === id)?.team ?
         {more.slice(0, 9).map((s) => (
           <a class="tile reveal" href={url.story(issue.date, s.id)} data-team={s.team}>
             <Art seed={s.id} team={s.team} reveal />
-            <TeamTag team={s.team} section={s.section} />
+            <TeamTag team={s.team} section={s.section} fresh={freshness(s.published, issue.date)} />
             <h3>{s.title}</h3>
             <p class="summary clamp2">{s.summary}</p>
           </a>

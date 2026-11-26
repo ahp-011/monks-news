@@ -4,6 +4,9 @@ export interface Source { name: string; url: string }
 export interface Story {
   id: string; section: SectionKey; team: Team; featured?: boolean;
   title: string; summary: string; why?: string; forTeam?: string; sources: Source[];
+  /** Date the news broke (YYYY-MM-DD). */ published?: string;
+  /** Evidence it is trending, e.g. "#1 on Hacker News". */ buzz?: string;
+  /** Links for reading further: docs, tutorials, threads. */ deeper?: Source[];
 }
 export interface Tool {
   id: string; name: string; kind: 'ai' | 'open-source'; team: Team;
@@ -71,6 +74,15 @@ export const fmt = {
   short: (d: string) => at(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: tz }).toUpperCase(),
   no: (n: number) => `No. ${String(n).padStart(3, '0')}`,
 };
+
+/** "Today", "Yesterday" or "24 Nov", relative to the issue date. */
+export function freshness(published: string | undefined, issueDate: string) {
+  if (!published) return '';
+  const days = Math.round((Date.parse(issueDate) - Date.parse(published)) / 86400000);
+  if (days <= 0) return 'Today';
+  if (days === 1) return 'Yesterday';
+  return fmt.short(published).replace(/^(\d+) (\w+)$/, (_, d, m) => `${d} ${m[0]}${m.slice(1).toLowerCase()}`);
+}
 
 export const teamCount = (list: { team: Team }[], t: 'design' | 'dev') => list.filter((x) => x.team === t || x.team === 'both').length;
 

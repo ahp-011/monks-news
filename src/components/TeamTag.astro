@@ -1,8 +1,9 @@
 ---
 import { TEAMS, sectionOf } from '../lib/data';
-const { team, section } = Astro.props as { team: 'design' | 'dev' | 'both'; section?: string };
+const { team, section, fresh } = Astro.props as { team: 'design' | 'dev' | 'both'; section?: string; fresh?: string };
 ---
 <span class="meta">
+  {fresh && <span class={`tag tag--fresh ${fresh === 'Today' ? 'is-today' : ''}`}>{fresh}</span>}
   {section && <span class="tag">{sectionOf(section).short}</span>}
   <span class="tag" title={TEAMS[team].label}><span class={`dot dot--${team}`}></span>{TEAMS[team].short}</span>
 </span>

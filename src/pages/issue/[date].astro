@@ -2,7 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import Art from '../../components/Art.astro';
 import TeamTag from '../../components/TeamTag.astro';
-import { issues, SECTIONS, fmt, url, type Issue } from '../../lib/data';
+import { issues, SECTIONS, fmt, url, freshness, type Issue } from '../../lib/data';
 
 export function getStaticPaths() {
   return issues.map((issue, i) => ({ params: { date: issue.date }, props: { issue, newer: issues[i - 1], older: issues[i + 1] } }));
@@ -63,13 +63,20 @@ const toc = [{ key: 'in-brief', label: 'In brief', n: issue.brief.length }, ...g
               <div class={`story ${compact ? 'story--compact' : ''}`} id={s.id} data-team={s.team}>
                 {!compact && <Art seed={s.id} team={s.team} reveal />}
                 <div>
-                  <TeamTag team={s.team} />
+                  <TeamTag team={s.team} fresh={freshness(s.published, issue.date)} />
                   <h3><a href={`#${s.id}`}>{s.title}</a></h3>
+                  {s.buzz && <p class="buzz"><span aria-hidden="true">↗</span> {s.buzz}</p>}
                   <p class="story__text">{s.summary}</p>
                   {(s.why || s.forTeam) && (
                     <div class="notes">
                       {s.why && <div class="note"><span class="label">Why it matters</span>{clean(s.why)}</div>}
                       {s.forTeam && <div class="note"><span class="label">For the team</span>{clean(s.forTeam)}</div>}
+                    </div>
+                  )}
+                  {s.deeper && s.deeper.length > 0 && (
+                    <div class="deeper">
+                      <span class="label">Go deeper</span>
+                      <ul>{s.deeper.map((d) => <li><a href={d.url} target="_blank" rel="noopener">{d.name} <span class="arrow">→</span></a></li>)}</ul>
                     </div>
                   )}
                   <div class="sources">

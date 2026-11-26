@@ -24,7 +24,10 @@ The date is the publishing day in Dhaka (Asia/Dhaka). The site is rebuilt from t
       "summary": "2-4 factual sentences. Name dates, numbers, who said it. Attribute in brackets (Source).",
       "why": "1-2 sentences for an agency team. No label prefix.",       // shown under WHY IT MATTERS; optional
       "forTeam": "1-2 sentences, a concrete action. No label prefix.",  // shown under FOR THE TEAM; optional
-      "sources": [ { "name": "blog.google", "url": "https://..." } ]       // 1-4 real URLs, required
+      "published": "2026-11-26",     // the day the news broke (Dhaka date). Required.
+      "buzz": "#1 on Hacker News, 900+ points",   // optional: evidence it is trending right now
+      "sources": [ { "name": "blog.google", "url": "https://..." } ],      // 1-4 real URLs, required
+      "deeper": [ { "name": "Official docs: Getting started", "url": "https://..." } ]  // 1-3 go-deeper links; required on featured stories
     }
   ],
   "tools": [                         // 4-6 tools, best first
@@ -70,7 +73,9 @@ A normal issue has 20-30 stories spread across all sections, with a healthy mix 
 
 ## Rules
 
-- Only real, verifiable news from the last ~7 days. Every story needs at least one working source URL.
+- Freshness: at least 60% of stories from today or yesterday; nothing older than 7 days except `learning` and `experiment`. The validator enforces this.
+- Usefulness: `forTeam` is required for industry, design-ux, branding, development, ai-engineering, tools and open-source stories.
+- Only real, verifiable news. Every story needs at least one working source URL.
 - No invented numbers or quotes. If a claim is a vendor claim, say so.
 - Write plainly: sentence case headlines, no hype words, no emoji.
 - Don't repeat a story that appeared in an earlier issue unless there is real new information.

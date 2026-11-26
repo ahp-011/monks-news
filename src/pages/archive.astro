@@ -1,0 +1,142 @@
+---
+import Base from '../layouts/Base.astro';
+import Art from '../components/Art.astro';
+import TeamTag from '../components/TeamTag.astro';
+import { issues, allStories, SECTIONS, fmt, url } from '../lib/data';
+const first = issues[issues.length - 1]?.date;
+const last = issues[0]?.date;
+---
+<Base title="Archive" description="Every Monks News story, by section and date." active="archive">
+  <div class="wrap">
+    <header class="page-head">
+      <p class="label stats reveal"><span>{issues.length} {issues.length === 1 ? 'issue' : 'issues'}</span><span>{allStories.length} stories</span></p>
+      <h1 data-reveal="text">Every story, by section and date.</h1>
+      <p class="reveal">Search headlines and summaries, or narrow by section, team and date. Filters stay in the address, so a view can be shared.</p>
+    </header>
+
+    <form class="filters reveal" id="filters" role="search" onsubmit="return false">
+      <div class="filters__row">
+        <label class="field"><span class="label">Search</span><input class="input" type="search" name="q" placeholder="Headline, tool, company" autocomplete="off" /></label>
+        <label class="field"><span class="label">From</span><input class="input" type="date" name="from" min={first} max={last} /></label>
+        <label class="field"><span class="label">To</span><input class="input" type="date" name="to" min={first} max={last} /></label>
+      </div>
+      <div class="chips" role="group" aria-label="Section">
+        <button type="button" class="chip" data-section="" aria-pressed="true">All</button>
+        {SECTIONS.map((s) => <button type="button" class="chip" data-section={s.key} aria-pressed="false">{s.short}</button>)}
+      </div>
+      <div class="filters__foot">
+        <div class="chips" role="group" aria-label="Team">
+          <button type="button" class="chip" data-team-set="all" aria-pressed="true">Both teams</button>
+          <button type="button" class="chip" data-team-set="design" aria-pressed="false"><span class="dot dot--design"></span>Design Monks</button>
+          <button type="button" class="chip" data-team-set="dev" aria-pressed="false"><span class="dot dot--dev"></span>Dev Monks</button>
+        </div>
+        <button type="button" class="btn btn--secondary btn--sm" data-clear hidden>Clear filters</button>
+      </div>
+    </form>
+
+    <p class="label" aria-live="polite"><span data-total>{allStories.length}</span> stories</p>
+    <div id="results">
+      {issues.map((i) => (
+        <section class="day" data-day={i.date}>
+          <div class="day__head"><h2>{fmt.long(i.date)}</h2><a class="no" href={url.issue(i.date)}>{fmt.no(i.number).toUpperCase()}</a></div>
+          {i.stories.map((s) => (
+            <a class="arow" href={url.story(i.date, s.id)} data-row data-date={i.date} data-section={s.section} data-tm={s.team} data-team={s.team}>
+              <Art seed={s.id} team={s.team} />
+              <div>
+                <TeamTag team={s.team} section={s.section} />
+                <h3 data-hl>{s.title}</h3>
+                <p class="summary clamp2" data-hl>{s.summary}</p>
+              </div>
+              <span class="arow__date">{fmt.short(i.date)}</span>
+            </a>
+          ))}
+        </section>
+      ))}
+    </div>
+    <div class="more"><button type="button" class="btn btn--secondary" data-more hidden>Show more</button></div>
+    <div class="empty" data-empty hidden>
+      <h2>No stories match.</h2>
+      <p class="muted">Try a shorter search, a wider date range or another section.</p>
+      <button type="button" class="btn btn--secondary" data-clear-2>Clear filters</button>
+    </div>
+  </div>
+  <div style="height:80px"></div>
+</Base>
+
+<script>
+  const form = document.getElementById('filters') as HTMLFormElement;
+  const q = form.elements.namedItem('q') as HTMLInputElement;
+  const from = form.elements.namedItem('from') as HTMLInputElement;
+  const to = form.elements.namedItem('to') as HTMLInputElement;
+  const secBtns = [...form.querySelectorAll<HTMLButtonElement>('[data-section]')];
+  const rows = [...document.querySelectorAll<HTMLElement>('[data-row]')];
+  const days = [...document.querySelectorAll<HTMLElement>('[data-day]')];
+  const total = document.querySelector('[data-total]')!;
+  const empty = document.querySelector<HTMLElement>('[data-empty]')!;
+  const more = document.querySelector<HTMLButtonElement>('[data-more]')!;
+  const clear = document.querySelector<HTMLButtonElement>('[data-clear]')!;
+  const PAGE = 60;
+  let limit = PAGE;
+  const original = new Map<HTMLElement, string>();
+  rows.forEach((r) => r.querySelectorAll<HTMLElement>('[data-hl]').forEach((el) => original.set(el, el.textContent ?? '')));
+  const text = new Map(rows.map((r) => [r, (r.textContent ?? '').toLowerCase()]));
+
+  const params = new URLSearchParams(location.search);
+  q.value = params.get('q') ?? '';
+  from.value = params.get('from') ?? '';
+  to.value = params.get('to') ?? '';
+  let section = params.get('section') ?? '';
+  const team = () => document.documentElement.dataset.team ?? '';
+
+  const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+  const escRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  function render(push = true) {
+    const terms = q.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    const re = terms.length ? new RegExp(`(${terms.map(escRe).join('|')})`, 'gi') : null;
+    let shown = 0, matched = 0;
+    const t = team();
+    for (const r of rows) {
+      const d = r.dataset.date!;
+      const ok = (!section || r.dataset.section === section)
+        && (!t || r.dataset.tm === t || r.dataset.tm === 'both')
+        && (!from.value || d >= from.value) && (!to.value || d <= to.value)
+        && terms.every((w) => text.get(r)!.includes(w));
+      if (ok) matched++;
+      const visible = ok && shown < limit;
+      if (visible) shown++;
+      r.hidden = !visible;
+      r.querySelectorAll<HTMLElement>('[data-hl]').forEach((el) => {
+        const o = original.get(el)!;
+        el.innerHTML = re && visible ? esc(o).replace(re, '<mark>$1</mark>') : esc(o);
+      });
+    }
+    days.forEach((d) => (d.hidden = !d.querySelector('[data-row]:not([hidden])')));
+    total.textContent = String(matched);
+    empty.hidden = matched > 0;
+    more.hidden = matched <= shown;
+    secBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.section === section)));
+    const active = !!(q.value || from.value || to.value || section || t);
+    clear.hidden = !active;
+    if (push) {
+      const u = new URL(location.href);
+      const set = (k: string, v: string) => (v ? u.searchParams.set(k, v) : u.searchParams.delete(k));
+      set('q', q.value.trim()); set('section', section); set('from', from.value); set('to', to.value); set('team', t);
+      history.replaceState(null, '', u);
+    }
+  }
+  let tmr: number | undefined;
+  q.addEventListener('input', () => { clearTimeout(tmr); tmr = window.setTimeout(() => { limit = PAGE; render(); }, 120); });
+  [from, to].forEach((el) => el.addEventListener('change', () => { limit = PAGE; render(); }));
+  secBtns.forEach((b) => b.addEventListener('click', () => { section = b.dataset.section ?? ''; limit = PAGE; render(); }));
+  more.addEventListener('click', () => { limit += PAGE; render(false); });
+  document.addEventListener('teamchange', () => { limit = PAGE; render(); });
+  const reset = () => {
+    q.value = from.value = to.value = ''; section = ''; limit = PAGE;
+    (document.querySelector('[data-team-set="all"]') as HTMLButtonElement)?.click();
+    render();
+  };
+  clear.addEventListener('click', reset);
+  document.querySelector('[data-clear-2]')?.addEventListener('click', reset);
+  render(false);
+</script>

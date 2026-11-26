@@ -1,0 +1,8 @@
+---
+import { TEAMS, sectionOf } from '../lib/data';
+const { team, section } = Astro.props as { team: 'design' | 'dev' | 'both'; section?: string };
+---
+<span class="meta">
+  {section && <span class="tag">{sectionOf(section).short}</span>}
+  <span class="tag" title={TEAMS[team].label}><span class={`dot dot--${team}`}></span>{TEAMS[team].short}</span>
+</span>

@@ -1,0 +1,5 @@
+---
+import { art } from '../lib/art';
+const { seed, team = 'both', reveal = false, cols, rows, class: cls = '' } = Astro.props;
+---
+<div class={`art ${cls}`} data-reveal={reveal ? 'image' : undefined} set:html={art(seed, team, { cols, rows })} />

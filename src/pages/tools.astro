@@ -1,0 +1,83 @@
+---
+import Base from '../layouts/Base.astro';
+import Art from '../components/Art.astro';
+import TeamTag from '../components/TeamTag.astro';
+import { allTools, fmt, url } from '../lib/data';
+const tools = [...allTools].sort((a, b) => b.rating - a.rating || b.issue.date.localeCompare(a.issue.date));
+const ai = tools.filter((t) => t.kind === 'ai').length;
+const os = tools.length - ai;
+---
+<Base title="Tools" description="Every AI tool and open-source project Monks News has rated." active="tools">
+  <div class="wrap">
+    <header class="page-head">
+      <p class="label stats reveal"><span>{ai} AI tools</span><span>{os} open source</span></p>
+      <h1 data-reveal="text">Every tool the brief has picked.</h1>
+      <p class="reveal">AI tools and open-source projects, rated out of ten for design and development work. Anything that comes up again keeps its latest mention.</p>
+    </header>
+
+    <div class="filters reveal" id="tool-filters">
+      <div class="filters__foot">
+        <div class="chips" role="group" aria-label="Kind">
+          <button type="button" class="chip" data-kind="" aria-pressed="true">All</button>
+          <button type="button" class="chip" data-kind="ai" aria-pressed="false">AI tools</button>
+          <button type="button" class="chip" data-kind="open-source" aria-pressed="false">Open source</button>
+        </div>
+        <div class="chips" role="group" aria-label="Sort">
+          <button type="button" class="chip" data-sort="best" aria-pressed="true">Best first</button>
+          <button type="button" class="chip" data-sort="new" aria-pressed="false">Newest first</button>
+        </div>
+      </div>
+    </div>
+
+    <p class="label" aria-live="polite" style="margin-bottom:16px"><span data-total>{tools.length}</span> tools</p>
+    <div class="tool-index" id="tool-index">
+      {tools.map((t) => (
+        <article class="tool-card" data-tool data-kind={t.kind} data-team={t.team} data-rating={t.rating} data-date={t.issue.date} data-name={t.name.toLowerCase()}>
+          <Art seed={t.id} team={t.team} cols={8} rows={3} />
+          <div class="meta"><span class="tag">{t.kind === 'ai' ? 'AI tool' : 'Open source'}</span><TeamTag team={t.team} /></div>
+          <h3><a href={t.url} target="_blank" rel="noopener">{t.name} ↗</a> <span class="score score--light">Rated {t.rating}/10</span></h3>
+          <div class="bar" role="img" aria-label={`${t.rating} out of 10`}><i style={`width:${t.rating * 10}%`}></i></div>
+          <p>{t.text}</p>
+          <p class="for"><span class="label">For</span>{t.for}</p>
+          <a class="label" href={url.story(t.issue.date, t.id)} style="margin-top:auto">From the {fmt.short(t.issue.date)} issue →</a>
+        </article>
+      ))}
+    </div>
+    <div class="empty" data-empty hidden><h2>No tools here yet.</h2><p class="muted">Try another filter.</p></div>
+  </div>
+  <div style="height:96px"></div>
+</Base>
+
+<script>
+  const grid = document.getElementById('tool-index')!;
+  const cards = [...grid.querySelectorAll<HTMLElement>('[data-tool]')];
+  const kindBtns = [...document.querySelectorAll<HTMLButtonElement>('[data-kind]')].filter((b) => b.tagName === 'BUTTON');
+  const sortBtns = [...document.querySelectorAll<HTMLButtonElement>('[data-sort]')];
+  const params = new URLSearchParams(location.search);
+  let kind = params.get('kind') ?? '';
+  let sort = params.get('sort') === 'new' ? 'new' : 'best';
+  function render() {
+    const t = document.documentElement.dataset.team ?? '';
+    const sorted = [...cards].sort((a, b) => sort === 'best'
+      ? +b.dataset.rating! - +a.dataset.rating! || b.dataset.date!.localeCompare(a.dataset.date!)
+      : b.dataset.date!.localeCompare(a.dataset.date!) || +b.dataset.rating! - +a.dataset.rating!);
+    let n = 0;
+    sorted.forEach((c) => {
+      const ok = (!kind || c.dataset.kind === kind) && (!t || c.dataset.team === t || c.dataset.team === 'both');
+      c.hidden = !ok; if (ok) n++;
+      grid.appendChild(c);
+    });
+    document.querySelector('[data-total]')!.textContent = String(n);
+    (document.querySelector('[data-empty]') as HTMLElement).hidden = n > 0;
+    kindBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.kind === kind)));
+    sortBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.sort === sort)));
+    const u = new URL(location.href);
+    kind ? u.searchParams.set('kind', kind) : u.searchParams.delete('kind');
+    sort === 'new' ? u.searchParams.set('sort', 'new') : u.searchParams.delete('sort');
+    history.replaceState(null, '', u);
+  }
+  kindBtns.forEach((b) => b.addEventListener('click', () => { kind = b.dataset.kind ?? ''; render(); }));
+  sortBtns.forEach((b) => b.addEventListener('click', () => { sort = b.dataset.sort!; render(); }));
+  document.addEventListener('teamchange', render);
+  render();
+</script>

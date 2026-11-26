@@ -1,0 +1,13 @@
+---
+import Base from '../layouts/Base.astro';
+import Art from '../components/Art.astro';
+---
+<Base title="Not found">
+  <div class="wrap page-head" style="padding-bottom:96px">
+    <p class="label">404</p>
+    <h1>This page isn't in any issue.</h1>
+    <p>The link may be old, or the issue hasn't been published yet.</p>
+    <div class="hero__btns"><a class="btn" href="/">Read today's issue →</a><a class="btn btn--secondary" href="/archive/">Search the archive</a></div>
+    <div style="max-width:520px;margin-top:48px"><Art seed="not-found" team="both" /></div>
+  </div>
+</Base>

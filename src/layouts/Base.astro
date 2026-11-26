@@ -1,0 +1,97 @@
+---
+import '../styles/global.css';
+import Mark from '../components/Mark.astro';
+import TeamSwitch from '../components/TeamSwitch.astro';
+import { SECTIONS, url } from '../lib/data';
+import { SITE } from '../lib/site';
+
+interface Props { title?: string; description?: string; active?: 'today' | 'archive' | 'tools' | '' }
+const { title, description = SITE.tagline, active = '' } = Astro.props;
+const fullTitle = title ? `${title} · ${SITE.name}` : `${SITE.name} · Daily design and dev brief`;
+const links = [
+  { key: 'today', href: '/', label: 'Today' },
+  { key: 'archive', href: '/archive/', label: 'Archive' },
+  { key: 'tools', href: '/tools/', label: 'Tools' },
+];
+const footSections = SECTIONS.filter((s) => ['industry', 'design-ux', 'development', 'tools', 'open-source', 'learning'].includes(s.key));
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{fullTitle}</title>
+  <meta name="description" content={description} />
+  <meta property="og:title" content={fullTitle} />
+  <meta property="og:description" content={description} />
+  <meta name="theme-color" content="#f1f0ec" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script is:inline>
+    (function () {
+      var d = document.documentElement; d.classList.add('js');
+      try { var t = localStorage.getItem('mn-theme'); if (t) d.dataset.theme = t; } catch (e) {}
+      var team = new URLSearchParams(location.search).get('team');
+      if (!team) { try { team = localStorage.getItem('mn-team'); } catch (e) {} }
+      if (team === 'design' || team === 'dev') d.dataset.team = team;
+    })();
+  </script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="nav">
+    <div class="wrap nav__in">
+      <a class="brand" href="/" aria-label={`${SITE.name}, today`}><Mark /><span>{SITE.name}</span><span class="brand__tag">{SITE.tag.toUpperCase()}</span></a>
+      <div class="nav__right">
+        <TeamSwitch />
+        <nav class="nav__links" aria-label="Main">
+          {links.map((l) => <a class="nav__link" href={l.href} aria-current={active === l.key ? 'page' : undefined}>{l.label}</a>)}
+        </nav>
+        <button class="icon-btn" type="button" data-theme-toggle aria-label="Switch to dark theme">
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4" /><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor" /></svg>
+        </button>
+        <button class="icon-btn nav__menu" type="button" data-drawer-toggle aria-expanded="false" aria-controls="drawer" aria-label="Open menu">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 5.5h12M2 10.5h12" /></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="drawer" id="drawer" aria-hidden="true" inert>
+    <div class="drawer__top">
+      <a class="brand" href="/"><Mark /><span>{SITE.name}</span></a>
+      <button class="icon-btn" type="button" data-drawer-close aria-label="Close menu">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" /></svg>
+      </button>
+    </div>
+    <nav class="drawer__links" aria-label="Mobile">
+      {links.map((l) => <a href={l.href} aria-current={active === l.key ? 'page' : undefined}>{l.label}</a>)}
+    </nav>
+    <p class="label" style="margin-top:28px">Show news for</p>
+    <TeamSwitch />
+  </div>
+
+  <main id="main"><slot /></main>
+
+  <footer class="foot">
+    <div class="wrap">
+      <div class="foot__grid">
+        <div>
+          <a class="brand" href="/"><Mark /><span>{SITE.name}</span><span class="brand__tag">{SITE.tag.toUpperCase()}</span></a>
+          <p>{SITE.tagline}</p>
+        </div>
+        <div><h4>Read</h4><ul><li><a href="/">Today</a></li><li><a href="/archive/">Archive</a></li><li><a href="/tools/">Tools</a></li></ul></div>
+        <div><h4>Sections</h4><ul>{footSections.map((s) => <li><a href={url.section(s.key)}>{s.label}</a></li>)}</ul></div>
+        <div><h4>The Monks</h4><ul>{SITE.company.map((c) => <li><a href={c.href} target="_blank" rel="noopener">{c.label}</a></li>)}</ul></div>
+      </div>
+      <div class="foot__bottom mono"><span>{SITE.name}</span><a href="#" data-top>Back to top ↑</a></div>
+    </div>
+  </footer>
+
+  <script>
+    import '../scripts/site';
+  </script>
+</body>
+</html>

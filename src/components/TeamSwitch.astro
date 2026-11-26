@@ -1,0 +1,8 @@
+---
+const { id = '' } = Astro.props;
+---
+<div class="team" role="group" aria-label="Show news for" id={id || undefined}>
+  <button type="button" data-team-set="all" aria-pressed="true">All</button>
+  <button type="button" data-team-set="design" aria-pressed="false"><span class="dot dot--design"></span>Design</button>
+  <button type="button" data-team-set="dev" aria-pressed="false"><span class="dot dot--dev"></span>Dev</button>
+</div>

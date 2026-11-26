@@ -1,0 +1,106 @@
+---
+import Base from '../../layouts/Base.astro';
+import Art from '../../components/Art.astro';
+import TeamTag from '../../components/TeamTag.astro';
+import { issues, SECTIONS, fmt, url, type Issue } from '../../lib/data';
+
+export function getStaticPaths() {
+  return issues.map((issue, i) => ({ params: { date: issue.date }, props: { issue, newer: issues[i - 1], older: issues[i + 1] } }));
+}
+const { issue, newer, older } = Astro.props as { issue: Issue; newer?: Issue; older?: Issue };
+const groups = SECTIONS.map((s) => ({ ...s, stories: issue.stories.filter((x) => x.section === s.key) }))
+  .filter((g) => g.stories.length || (g.key === 'tools' && issue.tools.length));
+const tools = [...issue.tools].sort((a, b) => b.rating - a.rating);
+const storyTeam = (id: string) => issue.stories.find((s) => s.id === id)?.team ?? 'both';
+const clean = (t?: string) => (t ?? '').replace(/^\s*(why it matters|for the team|for builders)\s*:\s*/i, '');
+const host = (u: string) => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return u; } };
+const toc = [{ key: 'in-brief', label: 'In brief', n: issue.brief.length }, ...groups.map((g) => ({ key: g.key, label: g.label, n: g.stories.length + (g.key === 'tools' ? issue.tools.length : 0) }))];
+---
+<Base title={`${fmt.no(issue.number)}, ${fmt.dayMonth(issue.date)}`} description={issue.headline} active={issue.date === issues[0].date ? 'today' : 'archive'}>
+  <div class="wrap issue">
+    <header class="issue__head">
+      <p class="label reveal">{fmt.no(issue.number)} &nbsp; {fmt.long(issue.date)} &nbsp; {issue.stories.length + issue.tools.length} stories</p>
+      <h1 data-reveal="text">The brief for {fmt.dayMonth(issue.date)}.</h1>
+    </header>
+
+    <aside class="toc" aria-label="In this issue">
+      <div class="toc-desktop">
+        <p class="label">In this issue</p>
+        <ol>{toc.map((t) => <li><a href={`#${t.key}`}><span>{t.label}</span><span class="count">{t.n}</span></a></li>)}</ol>
+      </div>
+      <div class="toc-mobile">
+        <label class="field"><span class="label">Jump to section</span>
+          <select class="input" data-toc-select>
+            <option value="">In this issue</option>
+            {toc.map((t) => <option value={t.key}>{t.label} ({t.n})</option>)}
+          </select>
+        </label>
+      </div>
+      <div class="dont">
+        <p class="label">Don't miss today</p>
+        <ul>{issue.dontMiss.map((d) => <li>{d}</li>)}</ul>
+      </div>
+    </aside>
+
+    <article>
+      <section class="isec" id="in-brief">
+        <h2>In brief</h2>
+        <ol class="brief-box">
+          {issue.brief.map((b) => (
+            <li data-team={storyTeam(b.story)}>
+              <div><h3><a href={`#${b.story}`}>{b.title}</a></h3><p>{b.text}</p></div>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      {groups.map((g) => (
+        <section class="isec" id={g.key} data-hide-empty={g.key !== 'tools' ? '' : undefined}>
+          <h2>{g.label} <span class="label">{g.stories.length + (g.key === 'tools' ? issue.tools.length : 0)}</span></h2>
+          {g.stories.map((s) => {
+            const compact = ['social', 'learning', 'opportunities', 'trends'].includes(s.section);
+            return (
+              <div class={`story ${compact ? 'story--compact' : ''}`} id={s.id} data-team={s.team}>
+                {!compact && <Art seed={s.id} team={s.team} reveal />}
+                <div>
+                  <TeamTag team={s.team} />
+                  <h3><a href={`#${s.id}`}>{s.title}</a></h3>
+                  <p class="story__text">{s.summary}</p>
+                  {(s.why || s.forTeam) && (
+                    <div class="notes">
+                      {s.why && <div class="note"><span class="label">Why it matters</span>{clean(s.why)}</div>}
+                      {s.forTeam && <div class="note"><span class="label">For the team</span>{clean(s.forTeam)}</div>}
+                    </div>
+                  )}
+                  <div class="sources">
+                    {s.sources.map((src) => <a href={src.url} target="_blank" rel="noopener">{src.name || host(src.url)} ↗</a>)}
+                    <button class="copy" type="button" data-copy={url.story(issue.date, s.id)}>Copy link</button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          {g.key === 'tools' && (
+            <div class="tools-grid">
+              {tools.map((t) => (
+                <div class="tool-card" id={t.id} data-team={t.team}>
+                  <Art seed={t.id} team={t.team} cols={8} rows={3} />
+                  <div class="meta"><span class="tag">{t.kind === 'ai' ? 'AI tool' : 'Open source'}</span><TeamTag team={t.team} /></div>
+                  <h3><a href={t.url} target="_blank" rel="noopener">{t.name} ↗</a> <span class="score score--light">Rated {t.rating}/10</span></h3>
+                  <div class="bar" role="img" aria-label={`${t.rating} out of 10`}><i style={`width:${t.rating * 10}%`}></i></div>
+                  <p>{t.text}</p>
+                  <p class="for"><span class="label">For</span>{t.for}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      ))}
+
+      <nav class="pager" aria-label="Other issues">
+        {older ? <a href={url.issue(older.date)}><span class="label">← Previous · {fmt.no(older.number)}</span><h3>{older.headline}</h3></a> : <span></span>}
+        {newer ? <a href={url.issue(newer.date)}><span class="label">Next · {fmt.no(newer.number)} →</span><h3>{newer.headline}</h3></a> : <a href="/archive/"><span class="label">Archive →</span><h3>Every story, by section and date</h3></a>}
+      </nav>
+    </article>
+  </div>
+</Base>

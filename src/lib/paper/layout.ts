@@ -53,8 +53,8 @@ export function layoutPaper(issue: Issue) {
   // 2-3: before nine + lead
   const brief = issue.brief.map((b) => `<li><h3>${e(b.title)}</h3><p>${e(b.text)}</p></li>`).join('');
   const dont = issue.dontMiss.length ? `<div class="dont"><p class="kick">Don't miss today</p><ol>${issue.dontMiss.map((x) => `<li>${e(x)}</li>`).join('')}</ol></div>` : '';
-  pages.push({ label: 'In brief', inner: span('Good morning', 'L', 46) + `<div class="push"><p class="kick">01 · In brief</p><ol class="brief">${brief}</ol>${dont}</div>${filler(issue.date + '-brief')}` });
-  pages.push({ label: 'Lead story', inner: span('Good morning', 'R', 46) + `<div class="push"><p class="kick">Lead · ${e(SECTIONS.find((x) => x.key === lead.section)?.label ?? '')}</p><h2 class="lead__h">${e(lead.title)}</h2><div class="cols2">${story({ ...lead, why: '' }, { title: false, cls: 'st--lead' })}</div>${lead.why ? `<blockquote class="pull">${e(clean(lead.why))}<small>Why it matters for the Monks</small></blockquote>` : ''}</div>${filler(issue.date + '-lead', lead.team)}` });
+  pages.push({ label: 'In brief', inner: span('Good morning', 'L', 52, 140) + `<div class="push"><p class="kick">01 · In brief</p><ol class="brief">${brief}</ol>${dont}</div>${filler(issue.date + '-brief')}` });
+  pages.push({ label: 'Lead story', inner: span('Good morning', 'R', 52, 140) + `<div class="push"><p class="kick">Lead · ${e(SECTIONS.find((x) => x.key === lead.section)?.label ?? '')}</p><h2 class="lead__h">${e(lead.title)}</h2><div class="cols2">${story({ ...lead, why: '' }, { title: false, cls: 'st--lead' })}</div>${lead.why ? `<blockquote class="pull">${e(clean(lead.why))}<small>Why it matters for the Monks</small></blockquote>` : ''}</div>${filler(issue.date + '-lead', lead.team)}` });
 
   // content pages: one two-column flow per page; sections run on with an inline label,
   // so columns fill evenly instead of leaving half a page empty

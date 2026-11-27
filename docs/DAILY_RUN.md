@@ -6,9 +6,9 @@ It runs by itself in **GitHub Actions** (`.github/workflows/daily.yml`). Nobody 
 
 | Dhaka time | What happens |
 |---|---|
-| 07:10 | Main run: collect, write, validate, publish. Vercel deploys within ~2 minutes. |
-| 08:13 | Backup run: publishes only if the 07:10 run failed. |
-| 09:47 | Second backup, in case GitHub skipped both earlier runs. |
+| 06:07 | Main run: collect, write, validate, publish (~5 minutes). Vercel deploys within ~2 minutes. |
+| 07:13 | Backup run: publishes only if the 06:07 run failed or was skipped. |
+| 08:07 | Last backup, still live well before 9:00. |
 
 ## How an issue is made (`scripts/daily/publish.mjs`)
 

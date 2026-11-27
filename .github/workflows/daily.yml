@@ -1,14 +1,14 @@
 name: Daily issue
 
 # Publishes the day's Monks News issue before 9:00 in Dhaka (UTC+6).
-# 01:10 UTC = 07:10 Dhaka (main run); 02:13 UTC = 08:13 Dhaka and 03:47 UTC = 09:47 Dhaka
-# (backups; each does nothing if today's issue already exists). GitHub can start
-# scheduled runs late, or occasionally skip one, hence the backups.
+# 00:07 UTC = 06:07 Dhaka (main run); 01:13 UTC = 07:13 and 02:07 UTC = 08:07 Dhaka
+# (backups; each does nothing if today's issue already exists). A run takes ~5 minutes.
+# GitHub can start scheduled runs late or skip one, hence the early times and backups.
 on:
   schedule:
-    - cron: '10 1 * * *'
-    - cron: '13 2 * * *'
-    - cron: '47 3 * * *'
+    - cron: '7 0 * * *'
+    - cron: '13 1 * * *'
+    - cron: '7 2 * * *'
   workflow_dispatch: {}
 
 permissions:

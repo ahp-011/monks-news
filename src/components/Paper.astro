@@ -13,7 +13,7 @@ const title = `DM Bytes · ${p.no}, ${p.longDate}`;
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>{title}</title>
   <meta name="description" content={`DM Bytes, the morning paper from Monks News: ${issue.headline}`} />
-  <meta name="theme-color" content="#2343c9" />
+  <meta name="theme-color" content="#d8d4cc" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -23,7 +23,7 @@ const title = `DM Bytes · ${p.no}, ${p.longDate}`;
   <a class="home" href="/">← Monks News</a>
   <div class="stage" id="stage">
     <div class="scaler" id="scaler">
-      <div class="book is-closed-front" id="book" data-labels={JSON.stringify(p.labels)}><div class="edgewrap edgewrap--l"><div class="edge edge--l" id="edgeL"></div></div><div class="edgewrap edgewrap--r"><div class="edge edge--r" id="edgeR"></div></div><Fragment set:html={p.leaves} /></div>
+      <div class="book is-closed-front" id="book" data-labels={JSON.stringify(p.labels)}><div class="shadow shadow--l"></div><div class="shadow shadow--r"></div><div class="edgewrap edgewrap--l"><div class="edge edge--l" id="edgeL"></div></div><div class="edgewrap edgewrap--r"><div class="edge edge--r" id="edgeR"></div></div><Fragment set:html={p.leaves} /></div>
     </div>
   </div>
   <nav class="bar" aria-label="Turn pages">
@@ -70,7 +70,7 @@ const title = `DM Bytes · ${p.no}, ${p.longDate}`;
     function fit() {
       if (phone()) { scaler.style.transform = ''; return; }
       var k = Math.min((innerWidth - 48) / 1200, (innerHeight - 110) / 840);
-      scaler.style.transform = 'scale(' + Math.max(0.3, k * 0.97) + ') rotateX(7deg)';
+      scaler.style.transform = 'scale(' + Math.max(0.3, k * 0.97) + ')';
     }
     // shrink type a little on any page that still runs long
     function fitPages() {

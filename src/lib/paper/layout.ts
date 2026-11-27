@@ -25,7 +25,7 @@ function story(s: Story, o: { notes?: boolean; title?: boolean; cls?: string; im
   if (notes && s.why) n += `<p class="note"><b>Why it matters.</b> ${e(clean(s.why))}</p>`;
   if (notes && s.forTeam) n += `<p class="note"><b>For the team.</b> ${e(clean(s.forTeam))}</p>`;
   const img = o.img ? `<figure class="ph">${art(s.id, s.team, { cols: 6, rows: 3 })}</figure>` : '';
-  return `<article class="st ${o.cls ?? ''}">${img}<p class="kick">${team(s.team)}</p>${o.title === false ? '' : `<h3>${e(s.title)}</h3>`}${s.buzz ? `<p class="buzz">${e(s.buzz)}</p>` : ''}<p class="body">${e(s.summary)}</p>${n}${sources(s)}</article>`;
+  return `<article class="st ${o.cls ?? ''}">${img}${o.title === false ? '' : `<h3>${e(s.title)}</h3>`}${s.buzz ? `<p class="buzz">${e(s.buzz)}</p>` : ''}<p class="body">${e(s.summary)}</p>${n}${sources(s)}</article>`;
 }
 // rough height of a story in one 254px column, in px
 const est = (s: Story, notes = true) => 64 + (s.buzz ? 14 : 0) + Math.ceil((s.title.length / 30)) * 18 +
@@ -53,8 +53,8 @@ export function layoutPaper(issue: Issue) {
   // 2-3: before nine + lead
   const brief = issue.brief.map((b) => `<li><h3>${e(b.title)}</h3><p>${e(b.text)}</p></li>`).join('');
   const dont = issue.dontMiss.length ? `<div class="dont"><p class="kick">Don't miss today</p><ol>${issue.dontMiss.map((x) => `<li>${e(x)}</li>`).join('')}</ol></div>` : '';
-  pages.push({ label: 'Before nine', inner: span('Before nine', 'L', 46) + `<div class="push"><p class="kick">01 · In brief</p><ol class="brief">${brief}</ol>${dont}</div>${filler(issue.date + '-brief')}` });
-  pages.push({ label: 'Lead story', inner: span('Before nine', 'R', 46) + `<div class="push"><p class="kick">Lead · ${e(SECTIONS.find((x) => x.key === lead.section)?.label ?? '')}</p><h2 class="lead__h">${e(lead.title)}</h2><div class="cols2">${story({ ...lead, why: '' }, { title: false, cls: 'st--lead' })}</div>${lead.why ? `<blockquote class="pull">${e(clean(lead.why))}<small>Why it matters for the Monks</small></blockquote>` : ''}</div>${filler(issue.date + '-lead', lead.team)}` });
+  pages.push({ label: 'In brief', inner: span('Good morning', 'L', 46) + `<div class="push"><p class="kick">01 · In brief</p><ol class="brief">${brief}</ol>${dont}</div>${filler(issue.date + '-brief')}` });
+  pages.push({ label: 'Lead story', inner: span('Good morning', 'R', 46) + `<div class="push"><p class="kick">Lead · ${e(SECTIONS.find((x) => x.key === lead.section)?.label ?? '')}</p><h2 class="lead__h">${e(lead.title)}</h2><div class="cols2">${story({ ...lead, why: '' }, { title: false, cls: 'st--lead' })}</div>${lead.why ? `<blockquote class="pull">${e(clean(lead.why))}<small>Why it matters for the Monks</small></blockquote>` : ''}</div>${filler(issue.date + '-lead', lead.team)}` });
 
   // content pages: one two-column flow per page; sections run on with an inline label,
   // so columns fill evenly instead of leaving half a page empty
@@ -89,17 +89,17 @@ export function layoutPaper(issue: Issue) {
 
   // rated tools
   if (issue.tools.length) {
-    const rows = [...issue.tools].sort((a, b) => b.rating - a.rating).slice(0, 6).map((t) => `<li><div class="score">${t.rating}<small>/10</small></div><div><h3><a href="${e(t.url)}" target="_blank" rel="noopener">${e(t.name)}</a> ${team(t.team)}</h3><p>${e(t.text)}</p><p class="for"><b>For</b> ${e(t.for)}</p></div></li>`).join('');
+    const rows = [...issue.tools].sort((a, b) => b.rating - a.rating).slice(0, 6).map((t) => `<li><div class="score">${t.rating}<small>/10</small></div><div><h3><a href="${e(t.url)}" target="_blank" rel="noopener">${e(t.name)}</a></h3><p>${e(t.text)}</p><p class="for"><b>For</b> ${e(t.for)}</p></div></li>`).join('');
     pages.push({ label: 'Rated tools', inner: span('Rated', 'L', 26, 136) + `<div class="push2"><p class="kick">Tools worth trying, best first</p><ol class="rated">${rows}</ol></div>${filler(issue.date + '-rated')}` });
   }
 
   // cover + back cover; pad to an even page count with a full-bleed poster
-  const back = `<section class="page page--L back" aria-label="Back cover">${poster('TODAY', 'red', 'poster--back')}<div class="back__in">${experiment ? `<p class="kick">Today's experiment · ${team(experiment.team)}</p><h2 class="lead__h">${e(experiment.title)}</h2><p class="body">${e(experiment.summary)}</p>${experiment.forTeam ? `<p class="note"><b>Try this.</b> ${e(clean(experiment.forTeam))}</p>` : ''}${sources(experiment)}` : `<h2 class="lead__h">That's today's paper.</h2>`}${filler(issue.date + '-back', experiment?.team ?? 'both')}<div class="colophon"><b>DM Bytes</b> is the paper edition of Monks News, put together every morning from the last 24 hours of design, development and AI news for the designers at Design Monks and the developers at Dev Monks. The next edition is on the table by 9:00.</div></div></section>`;
+  const back = `<section class="page page--L back" aria-label="Back cover">${poster('TODAY', 'red', 'poster--back')}<div class="back__in">${experiment ? `<p class="kick">Today's experiment</p><h2 class="lead__h">${e(experiment.title)}</h2><p class="body">${e(experiment.summary)}</p>${experiment.forTeam ? `<p class="note"><b>Try this.</b> ${e(clean(experiment.forTeam))}</p>` : ''}${sources(experiment)}` : `<h2 class="lead__h">That's today's paper.</h2>`}${filler(issue.date + '-back', experiment?.team ?? 'both')}<div class="colophon"><b>DM Bytes</b> is the paper edition of Monks News: the day's design, development and AI news, picked for people who make products. See you tomorrow.</div></div></section>`;
   const inner = pages.length; // pages between cover and back
   if ((inner + 2) % 2 === 1) pages.push({ label: 'DM Bytes', inner: '', raw: true });
 
   const toc = pages.map((p, i) => ({ label: p.label, n: i + 2 })).filter((p, i, a) => p.label !== 'DM Bytes' && a.findIndex((x) => x.label === p.label) === i).slice(0, 11);
-  const cover = `<section class="page page--R cover" aria-label="Cover"><div class="mast">DM<br>Bytes</div><div class="dateline"><span>${NO}</span><span>${e(longDate)}</span><span>Dhaka, 9:00 edition</span></div><div class="cover__grid"><div><p class="kick">Lead story · ${team(lead.team)}</p><h1 class="cover__h">${e(lead.title)}</h1><p class="body">${e(lead.summary)}</p></div><ol class="toc">${toc.map((t) => `<li><b>${e(t.label)}</b><i>${t.n}</i></li>`).join('')}</ol></div>${poster(NO.replace(' ', ''), 'orange', 'poster--cover')}<p class="cover__foot">Design, development and AI news for Design Monks and Dev Monks. Read with your first tea.</p></section>`;
+  const cover = `<section class="page page--R cover" aria-label="Cover"><div class="mast">DM<br>Bytes</div><div class="dateline"><span>${NO}</span><span>${e(longDate)}</span><span>Morning edition</span></div><div class="cover__grid"><div><p class="kick">Lead story</p><h1 class="cover__h">${e(lead.title)}</h1><p class="body">${e(lead.summary)}</p></div><ol class="toc">${toc.map((t) => `<li><b>${e(t.label)}</b><i>${t.n}</i></li>`).join('')}</ol></div>${poster(NO.replace(' ', ''), 'orange', 'poster--cover')}<p class="cover__foot">Design, development and AI news. Read it with your first tea.</p></section>`;
 
   const html: string[] = [cover];
   pages.forEach((p, i) => {

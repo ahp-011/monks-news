@@ -2,7 +2,7 @@
 export const SITE = {
   name: 'Monks News',
   tag: 'Daily',
-  tagline: 'The daily design and development brief for Design Monks and Dev Monks. A new issue every morning at 9:00, Dhaka.',
+  tagline: 'The daily design, development and AI brief from the Monks. A new issue every morning.',
   company: [
     { label: 'Design Monks', href: 'https://www.designmonks.co/' },
     { label: 'Dev Monks', href: 'https://www.devmonks.co/' },

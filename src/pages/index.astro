@@ -21,7 +21,7 @@ const storyTeam = (id: string) => issue.stories.find((s) => s.id === id)?.team ?
         <h1 data-reveal="text">Design and development news, read for <em>the Monks.</em></h1>
       </div>
       <div class="hero__aside reveal" style="--d:200ms">
-        <p>A new brief every morning at 9:00, Dhaka. Today's issue has {total} stories, from the industry to tools worth trying, for Design Monks and Dev Monks.</p>
+        <p>A new brief every morning. Today's issue has {total} stories, from the industry to tools worth trying.</p>
         <div class="hero__btns">
           <a class="btn" href={url.issue(issue.date)}>Read today's issue <span class="arrow">→</span></a>
           <a class="btn btn--bytes" href="/paper/">DM Bytes · read as a paper</a>

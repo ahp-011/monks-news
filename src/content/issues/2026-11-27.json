@@ -1,0 +1,542 @@
+{
+  "number": 2,
+  "date": "2026-11-27",
+  "headline": "Google mandates public developer contacts as fast-anything speeds apps",
+  "dontMiss": [
+    "Check your Google Play Console developer account address and phone visibility before policies take effect.",
+    "Run safe-anything on your current active repo to detect exposed keys and agent configuration flaws.",
+    "Inspect CSS style query support to decouple variant styling from rigid component class trees."
+  ],
+  "brief": [
+    {
+      "story": "google-to-expose-solo-android-app-developer-phone-numbers-an",
+      "title": "Google will display solo Android developers' phone numbers and addresses publicly.",
+      "text": "The change is aimed at complying with the EU Digital Services Act, but Google confirmed developer contact details will be exposed globally."
+    },
+    {
+      "story": "fast-anything-uses-coding-agents-to-profile-and-port-hot-app",
+      "title": "fast-anything introduces agent-driven targeted performance rewrites.",
+      "text": "The Rust tool profiles Python, Node, or Ruby applications and directs coding agents to rewrite only the 5% slow bottlenecks."
+    },
+    {
+      "story": "safe-anything-releases-fast-rust-vulnerability-scanner-tailo",
+      "title": "safe-anything ships as a fast Rust vulnerability scanner for code and AI agents.",
+      "text": "It inspects repositories for XSS, SQL injections, leaked secrets, package CVEs, and vulnerabilities in AI agent configurations."
+    },
+    {
+      "story": "nvidia-freezes-ai-server-shipments-to-southeast-asian-data-c",
+      "title": "Nvidia pauses AI server shipments to Southeast Asian hubs.",
+      "text": "Manufacturing partners were instructed to hold hardware deliveries to Malaysia, Singapore, Thailand, and Indonesia amid stricter US controls."
+    },
+    {
+      "story": "implementing-saga-and-circuit-breakers-for-offline-mobile-ch",
+      "title": "A mobile checkout architectural guide tackles offline network failures.",
+      "text": "The walkthrough applies Saga and Circuit Breaker patterns directly on Android to handle sudden connection drops during payment flows."
+    }
+  ],
+  "stories": [
+    {
+      "id": "google-to-expose-solo-android-app-developer-phone-numbers-an",
+      "section": "industry",
+      "team": "both",
+      "featured": true,
+      "title": "Google to expose solo Android app developer phone numbers and home addresses worldwide",
+      "summary": "Google announced that starting next year, independent Android app developers will be required to publicly show their telephone numbers and physical addresses on app listings. While initiated to meet the requirements of the European Union's Digital Services Act, Google plans to publish these developer contact details across the world.",
+      "why": "Agencies releasing apps for clients under individual or small studio developer accounts risk doxxing founders or internal team members.",
+      "forTeam": "Audit all client Google Play accounts today and ensure apps are registered under formal business entity profiles rather than personal accounts.",
+      "published": "2026-11-26",
+      "sources": [
+        {
+          "name": "theverge.com",
+          "url": "https://www.theverge.com/tech/1043228/android-play-store-google-developer-address-eu"
+        }
+      ],
+      "deeper": [
+        {
+          "name": "Hacker News: Google will show solo Android developers' phone numbers and addresses",
+          "url": "https://support.google.com/googleplay/android-developer/answer/17594752?hl=en"
+        }
+      ]
+    },
+    {
+      "id": "fast-anything-uses-coding-agents-to-profile-and-port-hot-app",
+      "section": "development",
+      "team": "dev",
+      "featured": true,
+      "title": "fast-anything uses coding agents to profile and port hot application bottlenecks",
+      "summary": "fast-anything profiles Python, Node, and Ruby services, isolates the slow 5% execution paths, and guides coding agents like Claude Code or Codex to port only those functions to Rust. The tool includes verification steps to prove the rewritten logic preserves behavioral parity with the original code.",
+      "why": "Complete codebase rewrites are rarely feasible within agency timelines; targeted agent-assisted micro-optimizations deliver speed without technical debt.",
+      "forTeam": "Integrate fast-anything into your API profiling pipeline to benchmark slow endpoints before pitching heavy serverless refactors.",
+      "published": "2026-11-27",
+      "buzz": "4.3k GitHub stars in its first week",
+      "sources": [
+        {
+          "name": "GitHub",
+          "url": "https://github.com/EL4CTEO/fast-anything"
+        }
+      ],
+      "deeper": [
+        {
+          "name": "Read the full story on GitHub",
+          "url": "https://github.com/EL4CTEO/fast-anything"
+        }
+      ]
+    },
+    {
+      "id": "safe-anything-releases-fast-rust-vulnerability-scanner-tailo",
+      "section": "tools",
+      "team": "dev",
+      "featured": true,
+      "title": "safe-anything releases fast Rust vulnerability scanner tailored for AI agents",
+      "summary": "safe-anything is an open-source Rust CLI scanner that checks projects for common attack vectors, including XSS, SQL injection, leaked secrets, and outdated dependency CVEs. It specifically introduces auditing rules for AI agent execution setups and tool integrations.",
+      "why": "AI agent tools often run shell commands or database queries with elevated credentials; scanning agent configs prevents catastrophic data breaches.",
+      "forTeam": "Add safe-anything to your team's CI/CD pull-request checks to catch credential leaks and unsafe agent definitions prior to deployment.",
+      "published": "2026-11-27",
+      "buzz": "800 GitHub stars in its first week",
+      "sources": [
+        {
+          "name": "GitHub",
+          "url": "https://github.com/erkamyaman/safe-anything"
+        }
+      ],
+      "deeper": [
+        {
+          "name": "Read the full story on GitHub",
+          "url": "https://github.com/erkamyaman/safe-anything"
+        }
+      ]
+    },
+    {
+      "id": "nvidia-freezes-ai-server-shipments-to-southeast-asian-data-c",
+      "section": "industry",
+      "team": "dev",
+      "featured": false,
+      "title": "Nvidia freezes AI server shipments to Southeast Asian data centers",
+      "summary": "Nvidia has instructed supply chain partners to pause server deliveries across Malaysia, Singapore, Thailand, and Indonesia. The freeze follows tightening United States trade policies intended to restrict AI accelerator silicon access in neighboring regions.",
+      "why": "Teams relying on regional cloud availability or colocation servers across Singapore and Malaysia may face hardware backorders and GPU price hikes.",
+      "forTeam": "Check hosting redundancy across alternative regions if your client setups rely directly on regional Southeast Asian GPU providers.",
+      "published": "2026-11-27",
+      "sources": [
+        {
+          "name": "techcrunch.com",
+          "url": "https://techcrunch.com/2026/11/26/nvidia-hits-pause-on-chip-shipments-to-southeast-asia/"
+        }
+      ]
+    },
+    {
+      "id": "tegaki-introduces-stroke-order-handwriting-animation-for-any",
+      "section": "design-ux",
+      "team": "design",
+      "featured": false,
+      "title": "Tegaki introduces stroke-order handwriting animation for any typography",
+      "summary": "Tegaki is an open-source library and generator that renders handwriting animations stroke by stroke. It computes the natural stroke order dynamically across any standard font file.",
+      "why": "Hand-drawn digital lettering usually requires heavy pre-baked video or frame-by-frame SVG paths; dynamic stroke animation reduces payload size.",
+      "forTeam": "Test Tegaki for interactive brand landing pages and onboarding signature animations in Webflow and custom web projects.",
+      "published": "2026-11-26",
+      "sources": [
+        {
+          "name": "tegaki.ink",
+          "url": "https://tegaki.ink/"
+        }
+      ]
+    },
+    {
+      "id": "balancing-form-clarity-with-low-definition-and-high-visual-f",
+      "section": "design-ux",
+      "team": "design",
+      "featured": false,
+      "title": "Balancing form clarity with low definition and high visual fidelity",
+      "summary": "A design essay explores the concept of 'high fidelity, low definition', showing how deliberate fidelity choices create structural clarity without cluttering early interface prototypes with excessive visual weight.",
+      "why": "Agency designers frequently over-index on granular polish during early MVP sprints, confusing clients about what is functional versus placeholder.",
+      "forTeam": "Apply deliberate fidelity boundaries in Figma wireframes to focus client feedback on data density and flows before locking styles.",
+      "published": "2026-11-26",
+      "sources": [
+        {
+          "name": "seangood.win",
+          "url": "https://www.seangood.win/articles/high-fidelity-low-definition"
+        }
+      ]
+    },
+    {
+      "id": "roboto-studio-rebrands-flowhub-with-helvetica-now-and-neon-m",
+      "section": "branding",
+      "team": "design",
+      "featured": false,
+      "title": "Roboto Studio rebrands Flowhub with Helvetica Now and Neon Moss green",
+      "summary": "Roboto Studio overhauled the visual identity for cannabis retail platform Flowhub around a single distinct mark, Helvetica Now typography, and a vivid Neon Moss green palette. The design system extends uniformly from top-of-funnel marketing pages down to point-of-sale checkout hardware screens.",
+      "why": "Demonstrates how high-compliance retail SaaS products can maintain a modern, punchy visual language across both marketing web and hardware interfaces.",
+      "forTeam": "Review Flowhub's color discipline when building dashboard themes that need to stand out without sacrificing enterprise accessibility.",
+      "published": "2026-11-27",
+      "sources": [
+        {
+          "name": "abduzeedo.com",
+          "url": "https://abduzeedo.com/roboto-studio-unveils-flowhub-brand-identity/"
+        }
+      ]
+    },
+    {
+      "id": "mucho-constructs-biotic-identity-using-generative-reaction-d",
+      "section": "branding",
+      "team": "design",
+      "featured": false,
+      "title": "Mucho constructs Biotic identity using generative reaction-diffusion systems",
+      "summary": "Design studio Mucho created a brand identity for synthetic biology nonprofit Biotic based on reaction-diffusion algorithms. The visual system originates from a single dot and organically multiplies into cellular patterns mirroring synthetic cell development.",
+      "why": "Provides an authentic template for biotech and health-tech client branding where generative mathematics directly inform the design system.",
+      "forTeam": "Experiment with procedural reaction-diffusion vector generators when building branding packages for scientific and deep-tech startups.",
+      "published": "2026-11-27",
+      "sources": [
+        {
+          "name": "abduzeedo.com",
+          "url": "https://abduzeedo.com/branding-biotic-brand-identity-mucho/"
+        }
+      ]
+    },
+    {
+      "id": "pentagram-rebuilds-parker-institute-identity-with-condensed-",
+      "section": "branding",
+      "team": "design",
+      "featured": false,
+      "title": "Pentagram rebuilds Parker Institute identity with condensed type and electric violet",
+      "summary": "Pentagram redesigned the brand for the Parker Institute for Cancer Immunotherapy, condensing the institute name and pairing bold typographic headlines with electric violet print assets and candid laboratory photography.",
+      "why": "Academic and medical institutions frequently struggle with bloated naming conventions; this demonstrates radical visual condensation.",
+      "forTeam": "Present simplified shorthand naming models and high-contrast color pairings when pitching rebrands to conservative healthcare clients.",
+      "published": "2026-11-27",
+      "sources": [
+        {
+          "name": "abduzeedo.com",
+          "url": "https://abduzeedo.com/branding-modular-science-parker-institute-pentagram/"
+        }
+      ]
+    },
+    {
+      "id": "implementing-saga-and-circuit-breakers-for-offline-mobile-ch",
+      "section": "development",
+      "team": "dev",
+      "featured": false,
+      "title": "Implementing Saga and Circuit Breakers for offline mobile checkouts",
+      "summary": "A deep dive examines how mobile food delivery apps handle payments when network connectivity drops during transit. The guide demonstrates implementing client-side Circuit Breaker and Saga compensation patterns on Android so pending orders avoid double-billing or cart corruption.",
+      "why": "Dhaka mobile networks frequently drop in elevators and transit; unhandled checkout requests lead to failed conversions and duplicate charges.",
+      "forTeam": "Review mobile payment and voucher redemption flows in your client apps to confirm idempotency keys and local saga handlers are active.",
+      "published": "2026-11-27",
+      "sources": [
+        {
+          "name": "dev.to",
+          "url": "https://dev.to/gargpadmakar/saga-circuit-breaker-friends-on-android-surviving-a-checkout-in-a-metro-tunnel-4276"
+        }
+      ]
+    },
+    {
+      "id": "css-style-queries-enable-clean-conditional-modifiers-across-",
+      "section": "development",
+      "team": "dev",
+      "featured": false,
+      "title": "CSS style queries enable clean conditional modifiers across isolated components",
+      "summary": "CSS-Tricks highlights how style queries allow styles and conditions to exist in separate elements. This enables child components to automatically adapt their visual state based on container properties without requiring messy CSS selector nesting or JavaScript state mirroring.",
+      "why": "Reduces boilerplate state synchronization in component libraries used across complex SaaS web applications.",
+      "forTeam": "Implement container-based CSS style queries in shared design system cards and badge components to eliminate unnecessary modifier props.",
+      "published": "2026-11-25",
+      "sources": [
+        {
+          "name": "css-tricks.com",
+          "url": "https://css-tricks.com/css-style-queries-as-conditional-modifiers/"
+        }
+      ]
+    },
+    {
+      "id": "clay-details-go-to-market-agent-infrastructure-and-user-resi",
+      "section": "ai-engineering",
+      "team": "dev",
+      "featured": false,
+      "title": "Clay details go-to-market agent infrastructure and user resistance to model selectors",
+      "summary": "Clay's Head of AI Jeff Barg shared how their platform builds GTM automation agents, noting that business users actively dislike choosing between model selectors. He detailed their operational strategy of qualifying global leads at scale while streamlining AI interaction models.",
+      "why": "Enterprise clients get confused when exposed to LLM model pickers; SaaS platforms need to abstract backend routing entirely.",
+      "forTeam": "Remove LLM selection dropdowns from your client-facing AI dashboards and replace them with task-optimized, automated routing behind the scenes.",
+      "published": "2026-11-27",
+      "sources": [
+        {
+          "name": "latent.space",
+          "url": "https://latent.space/p/how-clay-builds-gtm-agents-jeff-barg-head-of-ai/"
+        }
+      ]
+    },
+    {
+      "id": "freshness-checks-prevent-stale-llm-knowledge-wikis-from-citi",
+      "section": "ai-engineering",
+      "team": "dev",
+      "featured": false,
+      "title": "Freshness checks prevent stale LLM knowledge wikis from citing outdated rate cards",
+      "summary": "A technical breakdown warns against treating Karpathy-style compiled LLM wikis as static ingest problems. While reader scripts bundle PDFs and links cleanly for coding agents, updating the underlying source materials silently corrupts compiled answers unless explicit freshness validation triggers rebuilds.",
+      "why": "Clients running internal RAG wikis frequently receive outdated pricing and policy citations because cache invalidation was omitted.",
+      "forTeam": "Add automated timestamp and hash diff freshness checkers to agency RAG pipelines before deploying agent memory caches.",
+      "published": "2026-11-27",
+      "sources": [
+        {
+          "name": "dev.to",
+          "url": "https://dev.to/affineofficial/your-llm-wiki-still-cites-the-old-rate-card-i-wrote-a-freshness-check-for-that-4148"
+        }
+      ]
+    },
+    {
+      "id": "google-mandates-mcp-servers-for-ai-agents-while-locking-down",
+      "section": "ai-engineering",
+      "team": "dev",
+      "featured": false,
+      "title": "Google mandates MCP servers for AI agents while locking down Gmail sending tools",
+      "summary": "Google is steering developers toward using its Model Context Protocol (MCP) servers for agent integration. However, the official Gmail MCP server deliberately excludes email dispatch capabilities to limit unintended autonomous actions.",
+      "why": "Highlights strict platform sandboxing boundaries when connecting autonomous agents to third-party enterprise communication tools.",
+      "forTeam": "Architect agent workflows with separate read and human-confirmed send gates when integrating Google Workspace via MCP.",
+      "published": "2026-11-26",
+      "buzz": "308 points on Hacker News",
+      "sources": [
+        {
+          "name": "techstackups.com",
+          "url": "https://techstackups.com/articles/google-workspace-ai-agents-mcp/"
+        }
+      ],
+      "deeper": [
+        {
+          "name": "Discussion on Hacker News (261 comments)",
+          "url": "https://news.ycombinator.com/item?id=50653477"
+        }
+      ]
+    },
+    {
+      "id": "claude-mem-cloud-sync-synchronizes-ai-coding-agent-memory-ac",
+      "section": "tools",
+      "team": "both",
+      "featured": false,
+      "title": "Claude-Mem Cloud Sync synchronizes AI coding agent memory across devices",
+      "summary": "Claude-Mem Cloud Sync launched as a tool to synchronize context and learned project memory across different developer workstations. This allows engineers switching between office laptops and home desktops to retain agent context.",
+      "why": "Developers waste valuable token budgets and prompt time re-explaining architecture context to local agents when changing machines.",
+      "forTeam": "Evaluate Claude-Mem sync across remote and in-office team members working with agentic coding environments.",
+      "published": "2026-11-26",
+      "sources": [
+        {
+          "name": "producthunt.com",
+          "url": "https://www.producthunt.com/products/claude-mem"
+        }
+      ]
+    },
+    {
+      "id": "google-deepmind-s-hfe-benchmark-prioritizes-model-consistenc",
+      "section": "trends",
+      "team": "dev",
+      "featured": false,
+      "title": "Google DeepMind's HFE benchmark prioritizes model consistency over peak scores",
+      "summary": "Google DeepMind released the Humanity's First Exam (HFE) benchmark on Kaggle to evaluate whether language models can answer simple tasks consistently across repeated trials. The test demonstrates that high single-pass benchmark scores frequently hide high error rates during real-world repeated execution.",
+      "why": "Agency automation workflows fail if an agent succeeds 90% of the time but breaks silently on basic data parsing tasks.",
+      "forTeam": "Test LLM agent tasks across repeated deterministic sample batches rather than accepting single-pass evaluation metrics.",
+      "published": "2026-11-27",
+      "sources": [
+        {
+          "name": "dev.to",
+          "url": "https://dev.to/sarantoon/hfe-wadwaaomedlthamkhngngaaythuukthukkhranghruueyang-45f"
+        }
+      ]
+    },
+    {
+      "id": "houmahani-kane-builds-portfolio-around-three-js-morphing-sph",
+      "section": "inspiration",
+      "team": "both",
+      "featured": false,
+      "title": "Houmahani Kane builds portfolio around Three.js morphing sphere and wax print lines",
+      "summary": "Creative developer Houmahani Kane launched a personal portfolio centered on a continuous, morphing Three.js sphere. The visual contour shaders draw direct inspiration from traditional West African wax print textile patterns.",
+      "why": "Shows how cultural graphic traditions can be translated into custom WebGL shaders without relying on stock 3D design templates.",
+      "forTeam": "Study the shader implementation for lightweight 3D centerpieces on high-impact agency showcase websites.",
+      "published": "2026-11-26",
+      "sources": [
+        {
+          "name": "tympanus.net",
+          "url": "https://tympanus.net/codrops/2026/11/26/houmahani-kane-portfolio/"
+        }
+      ]
+    },
+    {
+      "id": "andrew-trousdale-portfolio-merges-interactive-node-networks-",
+      "section": "inspiration",
+      "team": "design",
+      "featured": false,
+      "title": "Andrew Trousdale portfolio merges interactive node networks with drawer typography",
+      "summary": "Jake Down Smith designed a portfolio site for Andrew Trousdale that pairs an interactive node graph with a sliding text drawer. Visitors navigate through career chapters by manipulating minimal connecting lines that trigger narrative content updates.",
+      "why": "A compelling alternative to traditional linear vertical scrolling for storytelling and complex case studies.",
+      "forTeam": "Reference the node-and-drawer navigational paradigm when wireframing non-linear case studies for agency client portals.",
+      "published": "2026-11-27",
+      "sources": [
+        {
+          "name": "abduzeedo.com",
+          "url": "https://abduzeedo.com/hybrid-node-and-text-web-design-andrew-trousdale/"
+        }
+      ]
+    },
+    {
+      "id": "llm-asm-runs-qwen3-0-6b-inference-and-training-in-pure-x86-6",
+      "section": "open-source",
+      "team": "dev",
+      "featured": false,
+      "title": "llm.asm runs Qwen3-0.6B inference and training in pure x86-64 assembly",
+      "summary": "The llm.asm repository packages Qwen3-0.6B inference into a 12 KB binary, includes a 22 KB bare-metal bootable OS, and provides a 32 KB Mini-GPT trainer with a live Braille TUI. The entire project is written in 100% pure NASM assembly with zero C libraries or external dependencies.",
+      "why": "Demonstrates the theoretical minimum footprint of neural network inference for ultra-constrained edge environments.",
+      "forTeam": "Review the AVX2 assembly kernels to understand low-level matrix multiplication optimizations on commodity x86 CPUs.",
+      "published": "2026-11-25",
+      "buzz": "1.7k GitHub stars in its first week",
+      "sources": [
+        {
+          "name": "GitHub",
+          "url": "https://github.com/alesha-pro/llm.asm"
+        }
+      ]
+    },
+    {
+      "id": "pibot-deploys-local-first-desktop-agent-teams-across-multi-a",
+      "section": "open-source",
+      "team": "dev",
+      "featured": false,
+      "title": "PiBot deploys local-first desktop agent teams across multi-agent group chats",
+      "summary": "PiBot is an open-source, local-first agent framework built on pi supporting macOS, Windows, Linux, and Android. It coordinates multi-agent group chats, browser navigation, MCP servers, approval prompts, and automated computer use routines.",
+      "why": "Provides a private, locally hostable orchestration stack for internal agency automation without recurring SaaS seat fees.",
+      "forTeam": "Spin up a local PiBot instance to test autonomous browser testing routines and internal desktop administrative tasks.",
+      "published": "2026-11-26",
+      "buzz": "661 GitHub stars in its first week",
+      "sources": [
+        {
+          "name": "GitHub",
+          "url": "https://github.com/w01fb0ss/PiBot"
+        }
+      ]
+    },
+    {
+      "id": "agent-sim-enables-ios-simulators-on-linux-hosts-for-ai-agent",
+      "section": "open-source",
+      "team": "dev",
+      "featured": false,
+      "title": "agent-sim enables iOS simulators on Linux hosts for AI agent workflows",
+      "summary": "agent-sim delivers an agent abstraction layer on top of x86Sim, enabling automated agents to control and inspect iOS simulators natively on Linux. The tool integrates with Claude Code and supports Model Context Protocol endpoints.",
+      "why": "Running iOS simulator automation previously demanded dedicated macOS hardware; Linux containerization dramatically lowers CI costs.",
+      "forTeam": "Test agent-sim on Linux runner instances to evaluate automated iOS UI interaction testing without macOS hardware lock-in.",
+      "published": "2026-11-27",
+      "buzz": "616 GitHub stars in its first week",
+      "sources": [
+        {
+          "name": "GitHub",
+          "url": "https://github.com/Developing-Gamer/agent-sim"
+        }
+      ],
+      "deeper": [
+        {
+          "name": "GitHub: Reukix/Reloc: iOS accessory-level location simulator over local…",
+          "url": "https://github.com/Reukix/Reloc"
+        }
+      ]
+    },
+    {
+      "id": "navigating-article-6-exemptions-under-the-eu-artificial-inte",
+      "section": "learning",
+      "team": "dev",
+      "featured": false,
+      "title": "Navigating Article 6 exemptions under the EU Artificial Intelligence Act",
+      "summary": "A legal and technical analysis breaks down Article 6 of the EU AI Act, detailing the four specific exemption pathways that allow AI systems to avoid high-risk classification under Annex III. Following recent timeline adjustments, high-risk enforcement takes effect on December 2, 2027.",
+      "why": "FinTech, EdTech, and recruitment SaaS products targeting European users face strict logging, oversight, and conformity assessment burdens.",
+      "forTeam": "Review planned client AI capabilities against Article 6 criteria to design workflows that fall outside the high-risk classification perimeter.",
+      "published": "2026-11-27",
+      "sources": [
+        {
+          "name": "dev.to",
+          "url": "https://dev.to/stepinto/article-6-of-the-eu-ai-act-leaves-four-ways-out-of-high-risk-10de"
+        }
+      ]
+    },
+    {
+      "id": "testing-partial-purchase-order-fulfillment-boundary-errors-w",
+      "section": "learning",
+      "team": "dev",
+      "featured": false,
+      "title": "Testing partial purchase order fulfillment boundary errors with SQLite",
+      "summary": "A case analysis demonstrates how accounting software fails boundary validations when suppliers split shipments across multiple invoices. Using a café purchase order scenario, it reveals how standard balance checks accept over-billing when split deliveries total 25 units instead of 24.",
+      "why": "Invoice reconciliation and inventory accounting errors frequently slip past standard happy-path unit tests in FinTech platforms.",
+      "forTeam": "Add targeted dual-invoice boundary test cases into SQLite and PostgreSQL transaction fixtures for commerce and billing projects.",
+      "published": "2026-11-27",
+      "sources": [
+        {
+          "name": "dev.to",
+          "url": "https://dev.to/noreply_utaxes_f57b6771a0/testing-the-last-8-bags-on-a-purchase-order-with-sqlite-joh"
+        }
+      ]
+    },
+    {
+      "id": "build-an-interactive-pop-up-papercraft-scene-using-xikhar-s-",
+      "section": "experiment",
+      "team": "both",
+      "featured": false,
+      "title": "Build an interactive pop-up papercraft scene using xikhar's agent skill",
+      "summary": "papercraft is a coding agent skill designed to construct web animations, scenes, and micro-games in a handcrafted 3D pop-up papercraft aesthetic. It works alongside coding assistants to generate custom styling and three-dimensional tactile components.",
+      "why": "Offers an unconventional, tactile aesthetic for interactive marketing campaigns, festive promotions, and EdTech explainers.",
+      "forTeam": "Install papercraft into your local coding agent and prompt it to generate an interactive 3D holiday greeting card component today.",
+      "published": "2026-11-21",
+      "buzz": "848 GitHub stars in its first week",
+      "sources": [
+        {
+          "name": "GitHub",
+          "url": "https://github.com/xikhar/papercraft"
+        }
+      ],
+      "deeper": [
+        {
+          "name": "GitHub: Moh4696/inkworks-skill: Inkworks: an agent skill for interactive 3D…",
+          "url": "https://github.com/Moh4696/inkworks-skill"
+        }
+      ]
+    }
+  ],
+  "tools": [
+    {
+      "id": "tool-safe-anything",
+      "name": "safe-anything",
+      "kind": "open-source",
+      "team": "dev",
+      "rating": 9,
+      "text": "A 100% Rust security scanner detecting XSS, SQLi, leaked secrets, CVEs, and AI agent setup misconfigurations.",
+      "for": "Dev Monks engineers securing backend microservices and agentic execution pipelines.",
+      "url": "https://github.com/erkamyaman/safe-anything"
+    },
+    {
+      "id": "tool-fast-anything",
+      "name": "fast-anything",
+      "kind": "open-source",
+      "team": "dev",
+      "rating": 9,
+      "text": "Profiles Python, Node, and Ruby apps and assists coding agents in rewriting the slowest 5% into verified Rust code.",
+      "for": "Backend developers dealing with slow API endpoints in monolithic Node and Python services.",
+      "url": "https://github.com/EL4CTEO/fast-anything"
+    },
+    {
+      "id": "tool-tegaki",
+      "name": "Tegaki",
+      "kind": "open-source",
+      "team": "design",
+      "rating": 8,
+      "text": "An open-source library that generates natural, stroke-by-stroke handwriting animations across any standard font.",
+      "for": "Design Monks UI designers creating signature animations and organic landing page interactions.",
+      "url": "https://tegaki.ink/"
+    },
+    {
+      "id": "tool-kurocat",
+      "name": "KuroCat",
+      "kind": "open-source",
+      "team": "both",
+      "rating": 7,
+      "text": "A free open-source desktop cat and coding companion built on Tauri v2, Rust, and MCP supporting Claude and Codex.",
+      "for": "Designers and developers wanting an interactive desktop overlay and MCP-connected coding companion.",
+      "url": "https://github.com/qianyiai/KuroCat"
+    },
+    {
+      "id": "tool-claude-mem-cloud-sync",
+      "name": "Claude-Mem Cloud Sync",
+      "kind": "ai",
+      "team": "both",
+      "rating": 8,
+      "text": "Synchronizes AI agent context, architectural constraints, and project memory across different developer machines.",
+      "for": "Engineers and designers switching between office workstations and personal remote laptops.",
+      "url": "https://www.producthunt.com/products/claude-mem"
+    }
+  ]
+}

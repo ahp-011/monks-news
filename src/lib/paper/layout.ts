@@ -2,6 +2,7 @@
 // Stories are packed into pages by an estimate of their height; in the browser a
 // fit-to-page step shrinks the type slightly on any page that still runs long.
 import { SECTIONS, type Issue, type Story, type Team } from '../data';
+import { art } from '../art';
 
 const e = (s = '') => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 const host = (u: string) => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return u; } };
@@ -18,12 +19,13 @@ function sources(s: Story) {
   if (s.deeper?.[0]) l.push(`<a href="${e(s.deeper[0].url)}" target="_blank" rel="noopener">${e(s.deeper[0].name)}</a>`);
   return `<p class="src">${l.join(' · ')}</p>`;
 }
-function story(s: Story, o: { notes?: boolean; title?: boolean; cls?: string } = {}) {
+function story(s: Story, o: { notes?: boolean; title?: boolean; cls?: string; img?: boolean } = {}) {
   const notes = o.notes !== false;
   let n = '';
   if (notes && s.why) n += `<p class="note"><b>Why it matters.</b> ${e(clean(s.why))}</p>`;
   if (notes && s.forTeam) n += `<p class="note"><b>For the team.</b> ${e(clean(s.forTeam))}</p>`;
-  return `<article class="st ${o.cls ?? ''}"><p class="kick">${team(s.team)}</p>${o.title === false ? '' : `<h3>${e(s.title)}</h3>`}${s.buzz ? `<p class="buzz">${e(s.buzz)}</p>` : ''}<p class="body">${e(s.summary)}</p>${n}${sources(s)}</article>`;
+  const img = o.img ? `<figure class="ph">${art(s.id, s.team, { cols: 6, rows: 3 })}</figure>` : '';
+  return `<article class="st ${o.cls ?? ''}">${img}<p class="kick">${team(s.team)}</p>${o.title === false ? '' : `<h3>${e(s.title)}</h3>`}${s.buzz ? `<p class="buzz">${e(s.buzz)}</p>` : ''}<p class="body">${e(s.summary)}</p>${n}${sources(s)}</article>`;
 }
 // rough height of a story in one 254px column, in px
 const est = (s: Story, notes = true) => 64 + (s.buzz ? 14 : 0) + Math.ceil((s.title.length / 30)) * 18 +
@@ -33,6 +35,8 @@ const poster = (word: string, color: string, cls = '') =>
   `<div class="poster ${cls}" style="--pc:var(--${color})"><div class="poster__w">${[...word].map((ch, i) => `<span style="--r:${ROT[i % 12]}deg;--y:${OFF[i % 12]}%">${e(ch === ' ' ? ' ' : ch)}</span>`).join('')}</div></div>`;
 const span = (word: string, side: 'L' | 'R', top: number, size = 172) =>
   `<div class="span span--${side}" style="top:${top}px;font-size:${size}px" aria-hidden="true">${e(word)}</div>`;
+
+const filler = (seed: string, t: Team = 'both') => `<div class="fill-art" aria-hidden="true">${art(`fill-${seed}`, t, { cols: 9, rows: 7 })}</div>`;
 
 export interface PaperPage { html: string; label: string }
 
@@ -49,53 +53,48 @@ export function layoutPaper(issue: Issue) {
   // 2-3: before nine + lead
   const brief = issue.brief.map((b) => `<li><h3>${e(b.title)}</h3><p>${e(b.text)}</p></li>`).join('');
   const dont = issue.dontMiss.length ? `<div class="dont"><p class="kick">Don't miss today</p><ol>${issue.dontMiss.map((x) => `<li>${e(x)}</li>`).join('')}</ol></div>` : '';
-  pages.push({ label: 'Before nine', inner: span('Before nine', 'L', 46) + `<div class="push"><p class="kick">01 · In brief</p><ol class="brief">${brief}</ol>${dont}</div>` });
-  pages.push({ label: 'Lead story', inner: span('Before nine', 'R', 46) + `<div class="push"><p class="kick">Lead · ${e(SECTIONS.find((x) => x.key === lead.section)?.label ?? '')}</p><h2 class="lead__h">${e(lead.title)}</h2><div class="cols2">${story({ ...lead, why: '' }, { title: false, cls: 'st--lead' })}</div>${lead.why ? `<blockquote class="pull">${e(clean(lead.why))}<small>Why it matters for the Monks</small></blockquote>` : ''}</div>` });
+  pages.push({ label: 'Before nine', inner: span('Before nine', 'L', 46) + `<div class="push"><p class="kick">01 · In brief</p><ol class="brief">${brief}</ol>${dont}</div>${filler(issue.date + '-brief')}` });
+  pages.push({ label: 'Lead story', inner: span('Before nine', 'R', 46) + `<div class="push"><p class="kick">Lead · ${e(SECTIONS.find((x) => x.key === lead.section)?.label ?? '')}</p><h2 class="lead__h">${e(lead.title)}</h2><div class="cols2">${story({ ...lead, why: '' }, { title: false, cls: 'st--lead' })}</div>${lead.why ? `<blockquote class="pull">${e(clean(lead.why))}<small>Why it matters for the Monks</small></blockquote>` : ''}</div>${filler(issue.date + '-lead', lead.team)}` });
 
-  // content pages: sections in order, packed by estimated height
-  const FIRST = 1120, NEXT = 1260; // usable two-column height on a page with / without a big heading
-  let cur: { parts: string[]; used: number; cap: number; label: string[]; first: string } | null = null;
+  // content pages: one two-column flow per page; sections run on with an inline label,
+  // so columns fill evenly instead of leaving half a page empty
+  const FIRST = 1130, NEXT = 1250; // usable two-column height with / without a big heading
+  let cur: { head: string; items: string[]; used: number; cap: number; label: string[]; first: string } | null = null;
   const flush = () => {
     if (!cur) return;
-    const spare = cur.cap - cur.used;
-    const pk = POSTER[cur.first];
-    if (pk && spare > 340) cur.parts.push(poster(pk[0], pk[1], 'poster--strip'));
-    pages.push({ label: cur.label.join(', '), inner: cur.parts.join('') });
+    const t = stories.find((x) => x.section === cur!.first)?.team ?? 'both';
+    pages.push({ label: cur.label.join(', '), inner: `${cur.head}<div class="cols2 flow">${cur.items.join('')}</div>${filler(`${issue.date}-${pages.length}`, t)}` });
     cur = null;
+  };
+  const open = (sec: (typeof SECTIONS)[number], continued: boolean) => {
+    cur = { head: continued ? '' : `<h2 class="sec">${e(SEC_TITLE[sec.key])}</h2>`, items: [], used: 0, cap: continued ? NEXT : FIRST, label: [SEC_TITLE[sec.key]], first: sec.key };
+    if (continued) { cur.items.push(`<p class="kick sub">${e(sec.label)}, continued</p>`); cur.used += 30; }
   };
   for (const sec of SECTIONS) {
     if (sec.key === 'experiment') continue;
     const list = stories.filter((s) => s.section === sec.key && s !== lead);
     if (!list.length) continue;
     const notes = !['inspiration', 'learning', 'social', 'branding'].includes(sec.key);
-    let block: string[] = [];
-    let blockH = 0;
-    const startBlock = (bigHeading: boolean) => {
-      if (!cur) { cur = { parts: [], used: 0, cap: FIRST, label: [], first: sec.key }; bigHeading = true; }
-      if (!cur.label.includes(SEC_TITLE[sec.key])) cur.label.push(SEC_TITLE[sec.key]);
-      cur.parts.push(bigHeading ? `<h2 class="sec">${e(SEC_TITLE[sec.key])}</h2>` : `<p class="kick rule">${e(sec.label)}</p>`);
-      cur.used += bigHeading ? 0 : 60;
-    };
-    const closeBlock = () => { if (cur && block.length) cur.parts.push(`<div class="cols2${notes ? '' : ' small'}">${block.join('')}</div>`); block = []; blockH = 0; };
-    if (cur && cur.cap - cur.used < 380) flush();
-    startBlock(!cur);
+    if (cur && cur.cap - cur.used < 300) flush();
+    if (!cur) open(sec, false);
+    else { cur.items.push(`<p class="kick sub">${e(sec.label)}</p>`); cur.used += 34; if (!cur.label.includes(SEC_TITLE[sec.key])) cur.label.push(SEC_TITLE[sec.key]); }
+    let first = true;
     for (const s of list) {
-      const h = est(s, notes);
-      if (cur!.used + h > cur!.cap) { closeBlock(); flush(); cur = { parts: [], used: 0, cap: NEXT, label: [SEC_TITLE[sec.key]], first: sec.key }; cur.parts.push(`<p class="kick">${e(sec.label)}, continued</p>`); }
-      block.push(story(s, { notes })); blockH += h; cur!.used += h;
+      const h = est(s, notes) + (first ? 128 : 0);
+      if (cur!.used + h > cur!.cap && cur!.items.length > 1) { flush(); open(sec, true); }
+      cur!.items.push(story(s, { notes, img: first, cls: notes ? '' : 'st--small' })); first = false; cur!.used += h;
     }
-    closeBlock();
   }
   flush();
 
   // rated tools
   if (issue.tools.length) {
     const rows = [...issue.tools].sort((a, b) => b.rating - a.rating).slice(0, 6).map((t) => `<li><div class="score">${t.rating}<small>/10</small></div><div><h3><a href="${e(t.url)}" target="_blank" rel="noopener">${e(t.name)}</a> ${team(t.team)}</h3><p>${e(t.text)}</p><p class="for"><b>For</b> ${e(t.for)}</p></div></li>`).join('');
-    pages.push({ label: 'Rated tools', inner: span('Rated', 'L', 26, 136) + `<div class="push2"><p class="kick">Tools worth trying, best first</p><ol class="rated">${rows}</ol></div>` });
+    pages.push({ label: 'Rated tools', inner: span('Rated', 'L', 26, 136) + `<div class="push2"><p class="kick">Tools worth trying, best first</p><ol class="rated">${rows}</ol></div>${filler(issue.date + '-rated')}` });
   }
 
   // cover + back cover; pad to an even page count with a full-bleed poster
-  const back = `<section class="page page--L back" aria-label="Back cover">${poster('TODAY', 'red', 'poster--back')}<div class="back__in">${experiment ? `<p class="kick">Today's experiment · ${team(experiment.team)}</p><h2 class="lead__h">${e(experiment.title)}</h2><p class="body">${e(experiment.summary)}</p>${experiment.forTeam ? `<p class="note"><b>Try this.</b> ${e(clean(experiment.forTeam))}</p>` : ''}${sources(experiment)}` : `<h2 class="lead__h">That's today's paper.</h2>`}<div class="colophon"><b>DM Bytes</b> is the paper edition of Monks News, put together every morning from the last 24 hours of design, development and AI news for the designers at Design Monks and the developers at Dev Monks. The next edition is on the table by 9:00.</div></div></section>`;
+  const back = `<section class="page page--L back" aria-label="Back cover">${poster('TODAY', 'red', 'poster--back')}<div class="back__in">${experiment ? `<p class="kick">Today's experiment · ${team(experiment.team)}</p><h2 class="lead__h">${e(experiment.title)}</h2><p class="body">${e(experiment.summary)}</p>${experiment.forTeam ? `<p class="note"><b>Try this.</b> ${e(clean(experiment.forTeam))}</p>` : ''}${sources(experiment)}` : `<h2 class="lead__h">That's today's paper.</h2>`}${filler(issue.date + '-back', experiment?.team ?? 'both')}<div class="colophon"><b>DM Bytes</b> is the paper edition of Monks News, put together every morning from the last 24 hours of design, development and AI news for the designers at Design Monks and the developers at Dev Monks. The next edition is on the table by 9:00.</div></div></section>`;
   const inner = pages.length; // pages between cover and back
   if ((inner + 2) % 2 === 1) pages.push({ label: 'DM Bytes', inner: '', raw: true });
 

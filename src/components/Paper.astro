@@ -23,7 +23,7 @@ const title = `DM Bytes · ${p.no}, ${p.longDate}`;
   <a class="home" href="/">← Monks News</a>
   <div class="stage" id="stage">
     <div class="scaler" id="scaler">
-      <div class="book is-closed-front" id="book" data-labels={JSON.stringify(p.labels)} set:html={p.leaves} />
+      <div class="book is-closed-front" id="book" data-labels={JSON.stringify(p.labels)}><div class="edgewrap edgewrap--l"><div class="edge edge--l" id="edgeL"></div></div><div class="edgewrap edgewrap--r"><div class="edge edge--r" id="edgeR"></div></div><Fragment set:html={p.leaves} /></div>
     </div>
   </div>
   <nav class="bar" aria-label="Turn pages">
@@ -49,7 +49,14 @@ const title = `DM Bytes · ${p.no}, ${p.longDate}`;
       [].forEach.call(dots.children, function (d, k) { d.classList.toggle('on', k === s); });
       hint.textContent = labels[s] || '';
       prev.disabled = s === 0; next.disabled = s === n;
-      if (moving != null) setTimeout(function () { render(); }, 960);
+      var eL = document.getElementById('edgeL'), eR = document.getElementById('edgeR');
+      eL.style.setProperty('--w', (s > 1 ? Math.min(14, (s - 1) * 2.2 + 2) : 0) + 'px');
+      eR.style.setProperty('--w', (s < n - 1 ? Math.min(14, (n - s - 1) * 2.2 + 2) : 0) + 'px');
+      if (moving != null) {
+        var ml = leaves[moving]; ml.classList.add('turning');
+        setTimeout(function () { ml.classList.remove('turning'); }, 520);
+        setTimeout(function () { render(); }, 960);
+      }
     }
     function go(d) { var t = Math.max(0, Math.min(n, s + d)); if (t === s) return; var m = d > 0 ? s : t; s = t; render(m); }
     prev.addEventListener('click', function () { go(-1); });
@@ -63,7 +70,7 @@ const title = `DM Bytes · ${p.no}, ${p.longDate}`;
     function fit() {
       if (phone()) { scaler.style.transform = ''; return; }
       var k = Math.min((innerWidth - 48) / 1200, (innerHeight - 110) / 840);
-      scaler.style.transform = 'scale(' + Math.max(0.3, k) + ')';
+      scaler.style.transform = 'scale(' + Math.max(0.3, k * 0.97) + ') rotateX(7deg)';
     }
     // shrink type a little on any page that still runs long
     function fitPages() {
@@ -74,8 +81,21 @@ const title = `DM Bytes · ${p.no}, ${p.longDate}`;
         while (pg.scrollHeight > pg.clientHeight + 1 && z > 0.8) { z -= 0.03; t.style.zoom = z; }
       });
     }
-    addEventListener('resize', fit); fit(); render();
-    (document.fonts ? document.fonts.ready : Promise.resolve()).then(fitPages);
+    // poster words always fit their block, never cropped
+    function fitPosters() {
+      document.querySelectorAll('.poster__w').forEach(function (w) {
+        var box = w.parentElement; w.style.fontSize = '';
+        var fs = parseFloat(getComputedStyle(w).fontSize);
+        for (var i = 0; i < 30 && (w.scrollWidth > box.clientWidth * 0.94 || w.offsetHeight > box.clientHeight * 1.02); i++) { fs *= 0.94; w.style.fontSize = fs + 'px'; }
+      });
+    }
+    // artwork fills leftover space; drop it where the gap is too small to read as a picture
+    function fitArt() {
+      document.querySelectorAll('.fill-art').forEach(function (a) { a.hidden = false; if (!phone() && a.getBoundingClientRect().height / (a.closest('.page').getBoundingClientRect().height / 840) < 70) a.hidden = true; });
+    }
+    function layout() { fitPages(); fitPosters(); fitArt(); }
+    addEventListener('resize', function () { fit(); fitPosters(); }); fit(); render();
+    (document.fonts ? document.fonts.ready : Promise.resolve()).then(layout);
   })();
   </script>
 </body>

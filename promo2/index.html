@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Monks News Opener</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
+/* Monks News opener: red field, white geometric type, black-and-white and red photo mosaics. 1920x1080, driven by render(t). */
+:root { --red:#CA0014; --red-hi:#E0101E; --red-lo:#9E000F; --white:#F4F1EE; --ink:#0B0B0C; --display:'Jost', 'Futura', 'Century Gothic', sans-serif; }
+html, body { margin:0; background:#000; }
+#stage { position:relative; width:1920px; height:1080px; overflow:hidden; background:var(--red); color:var(--white); font-family:var(--display); }
+#stage * { box-sizing:border-box; }
+.L { position:absolute; inset:0; overflow:hidden; }
+.abs { position:absolute; }
+.img { position:absolute; inset:0; background-size:cover; background-position:center; }
+.field { background:radial-gradient(80% 90% at 55% 40%, var(--red-hi), var(--red) 55%, var(--red-lo)); }
+.plus { position:absolute; width:30px; height:30px; transform:translate(-50%,-50%); }
+.plus::before, .plus::after { content:''; position:absolute; background:var(--white); }
+.plus::before { left:13px; top:0; width:4px; height:30px; } .plus::after { left:0; top:13px; width:30px; height:4px; }
+.big { font-family:var(--display); font-weight:500; text-transform:uppercase; line-height:1; white-space:nowrap; }
+.kick { font-family:var(--display); font-weight:600; text-transform:uppercase; letter-spacing:.42em; white-space:nowrap; }
+.tile { position:absolute; overflow:hidden; background:#111; }
+.tile > .img { inset:-4%; }
+.label { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:var(--red); }
+.grain { position:absolute; inset:-200px; pointer-events:none; opacity:.09; mix-blend-mode:overlay;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E"); }
+.vig { position:absolute; inset:0; pointer-events:none; background:radial-gradient(100% 95% at 50% 50%, transparent 60%, rgba(10,0,2,.35)); }
+.slice { position:absolute; inset:0; }
+.disc { position:absolute; left:0; top:0; border-radius:50%; }
+.ring { position:absolute; border-radius:50%; border:2px solid rgba(255,255,255,.12); }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script>
+const clamp01 = (x) => Math.max(0, Math.min(1, x));
+const seg = (t, a, b) => clamp01((t - a) / (b - a));
+const lerp = (a, b, p) => a + (b - a) * p;
+const eo = (x) => 1 - Math.pow(1 - x, 3), ei = (x) => x * x * x;
+const eio = (x) => (x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const eox = (x) => (x >= 1 ? 1 : 1 - Math.pow(2, -10 * x));
+const eob = (x, s = 1.7) => 1 + (s + 1) * Math.pow(x - 1, 3) + s * Math.pow(x - 1, 2);
+const A = (n) => 'assets/' + n + '.jpg';
+const $ = (h) => { const d = document.createElement('div'); d.innerHTML = h.trim(); return d.firstChild; };
+const stage = document.getElementById('stage');
+const add = (h, parent = stage) => parent.appendChild($(h));
+const hash = (i) => { const s = Math.sin(i * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+
+// ---------- shared pieces ----------
+const field = (extra = '') => `<div class="L field">${extra}</div>`;
+function tile(x, y, w, h, c) {
+  return `<div class="tile" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px">${c.img ? `<div class="img" style="background-image:url(${A(c.img)})"></div>` : ''}${c.label ? `<div class="label"><span class="big" style="font-size:${c.size || 74}px;font-weight:400">${c.label}</span></div>` : ''}</div>`;
+}
+function mosaic(rows) {
+  const el = add(`<div class="L" style="background:#000"></div>`);
+  const strips = rows.map((row, r) => {
+    const s = add(`<div class="abs" style="left:0;top:${r * 360}px;width:${row.length * 640}px;height:360px"></div>`, el);
+    row.forEach((c, i) => add(tile(i * 640, 0, 640, 360, c), s));
+    return s;
+  });
+  return { el, strips };
+}
+function glitchable(host, inner, bands) {
+  const base = add(`<div class="slice">${inner}</div>`, host);
+  const sl = bands.map(([a, b]) => add(`<div class="slice" style="clip-path:inset(${a}% 0 ${100 - b}% 0);opacity:0">${inner}</div>`, host));
+  return (t, times) => {
+    let on = -1;
+    times.forEach((g, k) => { if (t >= g && t < g + 0.1) on = k; });
+    sl.forEach((s, i) => {
+      if (on < 0) { s.style.opacity = 0; return; }
+      const f = Math.floor((t - times[on]) * 30);
+      s.style.opacity = 1; s.style.transform = `translateX(${((hash(on * 13 + i * 7 + f) - .5) * 80).toFixed(1)}px)`;
+    });
+    base.style.opacity = on >= 0 ? 0.85 : 1;
+  };
+}
+const pluses = (host, pts) => pts.map(([x, y]) => add(`<i class="plus" style="left:${x}px;top:${y}px"></i>`, host));
+
+// ---------- 1. mosaic one (0 to 1.6) ----------
+const M1 = mosaic([
+  [{ img: 'red-4f477ff4' }, { img: 'col-3ad7a3d9' }, { img: 'bw-3435f592' }, { img: 'red-cc2caab7' }, { img: 'col-56258858' }, { img: 'bw-34559682' }],
+  [{ img: 'bw-9abdd9b8' }, { img: 'col-0602dd85' }, { label: 'Today' }, { img: 'bw-88568ca9' }, { img: 'red-c828ff62' }, { img: 'col-b21c60f2' }],
+  [{ img: 'bw-e340c582' }, { label: 'Design' }, { img: 'red-66e291b9' }, { img: 'bw-86772f3a' }, { label: 'Dev' }, { img: 'col-4f5b78a5' }],
+]);
+const M1plus = pluses(M1.el, [[700, 330], [1250, 545], [420, 900], [1600, 760]]);
+
+// ---------- 2. TODAY card, glitch, discs, iris (1.6 to 3.4) ----------
+const S2 = add(`<div class="L">${field()}</div>`);
+const S2plus = pluses(S2, [[1590, 160], [300, 860], [1720, 700]]);
+const S2word = add(`<div class="abs" style="left:0;top:395px;width:1920px;height:290px"></div>`, S2);
+const S2g = glitchable(S2word, `<div class="big" style="text-align:center;font-size:286px;line-height:290px">Today</div>`, [[14, 30], [46, 58], [70, 86]]);
+const S2tick = add(`<div class="abs" style="left:1418px;top:432px;width:16px;height:46px;background:var(--white);transform:skewX(-18deg);opacity:0"></div>`, S2);
+const S2white = add(`<div class="disc" style="background:#E4DDDF"></div>`, S2);
+const S2red = add(`<div class="disc" style="background:var(--red)"></div>`, S2);
+const S2iris = add(`<div class="L" style="clip-path:circle(0px at 960px 540px)"><div class="img s2-photo" style="background-image:url(${A('red-c828ff62')})"></div></div>`, S2);
+const S2bars = [add(`<div class="abs" style="left:40px;top:640px;width:90px;height:12px;background:var(--red)"></div>`, S2), add(`<div class="abs" style="left:40px;top:662px;width:60px;height:12px;background:var(--red)"></div>`, S2)];
+
+// ---------- 3. hold on the red photo (3.4 to 4.05) ----------
+const S3 = add(`<div class="L"><div class="img s3-img" style="background-image:url(${A('red-c828ff62')})"></div></div>`);
+const S3img = S3.querySelector('.s3-img');
+const S3plus = pluses(S3, [[560, 400], [1180, 300]]);
+
+// ---------- 4. red panel retreats off a B/W photo, label grid, blocks (4.05 to 5.4) ----------
+const S4 = add(`<div class="L"><div class="img s4-img" style="background-image:url(${A('bw-88568ca9')})"></div></div>`);
+const S4img = S4.querySelector('.s4-img');
+let grid = '';
+for (let r = 0; r < 4; r++) for (let c = 0; c < 5; c++) grid += `<span class="abs" style="left:${70 + c * 400}px;top:${120 + r * 240}px;font-family:var(--display);font-size:26px;letter-spacing:.02em;white-space:nowrap;text-transform:uppercase"><b style="font-weight:400">Monks</b> <b style="font-weight:700">News</b></span>`;
+const S4grid = add(`<div class="L">${grid}</div>`, S4);
+const S4bar = add(`<div class="abs" style="right:0;top:0;bottom:0;background:var(--red)"></div>`, S4);
+const S4blocks = [[0, 210, 520, 130, 'var(--white)', -1], [0, 400, 380, 40, 'var(--red)', -1], [1920, 0, 460, 70, 'var(--red)', 1], [1920, 230, 900, 150, 'var(--red)', 1], [0, 560, 1100, 110, 'var(--red)', -1], [1920, 760, 760, 120, 'var(--white)', 1]]
+  .map(([x, y, w, h, c, d]) => ({ el: add(`<div class="abs" style="left:${d < 0 ? 0 : 1920 - w}px;top:${y}px;width:${w}px;height:${h}px;background:${c}"></div>`, S4), w, d }));
+
+// ---------- 5. title over a city photo, red dot to ring to iris (5.4 to 6.8) ----------
+const S5 = add(`<div class="L"><div class="img s5-img" style="background-image:url(${A('bw-cc2caab7')});background-position:50% 40%;filter:brightness(.75)"></div><div class="L" style="background:linear-gradient(90deg, rgba(0,0,0,.45), transparent 60%)"></div>
+  <div class="L s5-warm" style="background:linear-gradient(90deg, transparent 40%, rgba(214,60,24,.55) 90%);mix-blend-mode:multiply"></div></div>`);
+const S5img = S5.querySelector('.s5-img'), S5warm = S5.querySelector('.s5-warm');
+const S5bars = [[0, 1040, 540, 14], [540, 1026, 520, 28], [1060, 1012, 860, 42]].map(([x, y, w, h]) => add(`<div class="abs" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px;background:var(--red)"></div>`, S5));
+const titleHtml = `<b style="font-weight:700;color:var(--red)">Daily</b> <b style="font-weight:300;color:var(--white)">Brief</b>`;
+const S5ghost = add(`<div class="abs big" style="left:150px;top:540px;font-size:120px;opacity:0">${titleHtml}</div>`, S5);
+const S5title = add(`<div class="abs big" style="left:150px;top:460px;font-size:120px">${titleHtml}</div>`, S5);
+const S5red = add(`<div class="disc" style="background:var(--red)"></div>`, S5);
+const S5white = add(`<div class="disc" style="background:#E8E2E0"></div>`, S5);
+const S5iris = add(`<div class="L" style="clip-path:circle(0px at 960px 540px)"><div class="img s5-photo" style="background-image:url(${A('col-0602dd85')});filter:sepia(.75) saturate(1.3) contrast(1.05)"></div></div>`, S5);
+const S5photo = S5.querySelector('.s5-photo');
+const S5plus = pluses(S5, [[340, 920], [1440, 300]]);
+
+// ---------- 6. rapid black-and-white cuts (6.8 to 8.4) ----------
+const CUTS = [[6.8, 'col-0602dd85', 'sepia(.75) saturate(1.3)'], [7.2, 'bw-9abdd9b8', ''], [7.4, 'bw-66e291b9', ''], [7.7, 'bw-cc2caab7', ''], [8.0, 'bw-8cd78da2', '']];
+const S6 = add(`<div class="L" style="background:#000"></div>`);
+const S6shots = CUTS.map(([t0, img, filt]) => {
+  const el = add(`<div class="L"></div>`, S6);
+  const g = glitchable(el, `<div class="img" style="background-image:url(${A(img)});filter:${filt || 'none'}"></div>`, [[8, 20], [38, 46], [62, 78]]);
+  return { el, g, t0 };
+});
+const S6tint = add(`<div class="L" style="background:linear-gradient(90deg, transparent 60%, rgba(202,0,20,.7));mix-blend-mode:multiply"></div>`, S6);
+
+// ---------- 7. mosaic two, zoom (8.4 to 10.05) ----------
+const M2 = mosaic([
+  [{ img: 'red-6c1ee3bf' }, { img: 'col-69742e65' }, { img: 'bw-4a186e1b' }, { img: 'red-b90c1d28' }, { img: 'bw-8cd78da2' }, { img: 'col-ba97dac9' }],
+  [{ img: 'bw-79c3f431' }, { img: 'col-b247baf9' }, { img: 'bw-34559682' }, { img: 'red-899d9d73' }, { img: 'bw-ee34a093' }, { img: 'col-cbfaf88c' }],
+  [{ img: 'col-9bde49a4' }, { label: 'AI' }, { img: 'red-61a6fcdd' }, { img: 'bw-ecf2ee75' }, { img: 'col-7e3c7851' }, { img: 'red-dce52ad9' }],
+]);
+const M2plus = pluses(M2.el, [[880, 420], [1500, 140], [300, 720]]);
+
+// ---------- 8. photo with title, red floods in (10.05 to 10.7) ----------
+const S7 = add(`<div class="L"><div class="img s7-img" style="background-image:url(${A('bw-34559682')});filter:brightness(.55) contrast(1.1)"></div><div class="L" style="background:rgba(120,0,12,.45);mix-blend-mode:multiply"></div>
+  <div class="L s7-over" style="opacity:0">${field()}</div>
+  <div class="abs kick" style="left:0;right:0;top:352px;text-align:center;font-size:38px;letter-spacing:.55em;padding-left:.55em">Monks</div>
+  <div class="abs big" style="left:0;right:0;top:395px;text-align:center;font-size:300px;line-height:300px">News</div></div>`);
+const S7img = S7.querySelector('.s7-img'), S7over = S7.querySelector('.s7-over');
+
+// ---------- 9. end card (10.7 on) ----------
+const RINGS = [190, 300].map((r) => `<div class="ring" style="left:${960 - r}px;top:${560 - r}px;width:${2 * r}px;height:${2 * r}px"></div>`).join('');
+const DASH = `<div class="abs" style="left:250px;top:530px;width:250px;height:4px;background:rgba(255,255,255,.18)"></div><div class="abs" style="left:250px;top:545px;width:180px;height:4px;background:rgba(255,255,255,.12)"></div><div class="abs" style="left:300px;top:560px;width:120px;height:3px;background:rgba(255,255,255,.1)"></div>`;
+const S8 = add(`<div class="L">${field(RINGS + DASH)}</div>`);
+const S8plus = pluses(S8, [[1310, 650], [430, 830], [1660, 380], [620, 250], [1500, 900], [240, 470]]);
+const S8kick = add(`<div class="abs kick" style="left:0;right:0;top:352px;text-align:center;font-size:38px;letter-spacing:.55em;padding-left:.55em">Monks</div>`, S8);
+const S8word = add(`<div class="abs" style="left:0;top:395px;width:1920px;height:300px"></div>`, S8);
+const S8g = glitchable(S8word, `<div class="big" style="text-align:center;font-size:300px;line-height:300px">News</div>`, [[10, 28], [44, 60], [72, 90]]);
+const S8logo = add(`<svg class="abs" viewBox="0 0 32 32" style="left:932px;top:270px;width:56px;height:56px"><rect width="32" height="32" rx="8" fill="#F4F1EE"/><path transform="translate(16 16.4) scale(0.92) translate(-12.5 -11.8)" fill="#CA0014" d="M21.5382 7.90748C21.0683 6.79432 20.378 5.78426 19.5102 4.93458C18.6425 4.08491 17.609 3.40708 16.4722 2.94692C15.3373 2.48676 14.1204 2.25 12.89 2.25H11.7512C9.3644 2.25 7.0751 3.17796 5.3864 4.83148C3.6977 6.485 2.75 8.7247 2.75 11.0618V20.412C2.75 20.6583 2.8514 20.8951 3.02885 21.0707C3.20825 21.2445 3.45005 21.3438 3.7016 21.3438H13.2507C14.4324 21.3438 15.6024 21.1146 16.6944 20.6717C17.7864 20.2287 18.779 19.5814 19.6155 18.7623C20.4501 17.9432 21.1131 16.9732 21.5655 15.904C22.0179 14.8347 22.25 13.6872 22.25 12.5301V11.415C22.25 10.2102 22.0082 9.01874 21.5382 7.90748ZM17.3418 14.1263C15.9534 15.3178 14.2842 15.946 12.5136 15.946C10.743 15.946 9.0719 15.3178 7.68545 14.1263C7.3598 13.8495 7.3286 13.3664 7.61135 13.0494C7.89605 12.7306 8.38745 12.7 8.7131 12.9769C9.81095 13.9201 11.1252 14.4185 12.5136 14.4185C13.902 14.4185 15.2144 13.9201 16.3142 12.9769C16.6379 12.7 17.1312 12.7325 17.414 13.0494C17.6987 13.3664 17.6655 13.8495 17.3418 14.1263Z"/></svg>`, S8);
+const S8url = add(`<div class="abs" style="left:0;right:0;top:735px;text-align:center;font-size:28px;font-weight:500;letter-spacing:.24em">MONKS-NEWS.VERCEL.APP</div>`, S8);
+
+const VIG = add(`<div class="vig"></div>`), GRAIN = add(`<div class="grain"></div>`);
+const SCENES = [M1.el, S2, S3, S4, S5, S6, M2.el, S7, S8];
+const show = (el) => SCENES.forEach((s) => { s.style.display = s === el ? '' : 'none'; });
+const disc = (el, cx, cy, r) => { el.style.width = el.style.height = (2 * r) + 'px'; el.style.transform = `translate(${(cx - r).toFixed(1)}px,${(cy - r).toFixed(1)}px)`; el.style.display = r > 0.5 ? '' : 'none'; };
+const rowX = (i, tc, v, t) => (960 - (i * 640 + 320)) + v * (t - tc);
+const twinkle = (arr, t, s = 7) => arr.forEach((p, i) => { p.style.opacity = (0.35 + 0.65 * (hash(Math.floor(t * s) + i * 31) > 0.45 ? 1 : 0)).toFixed(2); });
+
+window.DURATION = 14;
+window.render = function (t) {
+  const f = Math.floor(t * 30);
+  GRAIN.style.transform = `translate(${(hash(f) * 180 - 90).toFixed(0)}px,${(hash(f + 7) * 180 - 90).toFixed(0)}px)`;
+  if (t < 1.6) {
+    show(M1.el);
+    M1.strips[0].style.transform = `translateX(${rowX(2, 1.45, 520, t).toFixed(1)}px)`;
+    M1.strips[1].style.transform = `translateX(${rowX(2, 1.45, 420, t).toFixed(1)}px)`;
+    M1.strips[2].style.transform = `translateX(${rowX(2, 1.45, -520, t).toFixed(1)}px)`;
+    const z = eio(seg(t, 1.25, 1.58));
+    M1.el.style.transformOrigin = '960px 540px';
+    M1.el.style.transform = `scale(${lerp(1, 3.0, z).toFixed(4)})`;
+    M1.el.style.filter = z > 0.02 && z < 0.98 ? `blur(${(Math.sin(z * Math.PI) * 7).toFixed(2)}px)` : 'none';
+    twinkle(M1plus, t);
+  } else if (t < 3.4) {
+    show(S2);
+    S2.querySelector('.field').style.transform = `scale(${lerp(1.0, 1.04, seg(t, 1.6, 3.4)).toFixed(4)})`;
+    S2word.style.transform = `scale(${lerp(1.0, 1.045, seg(t, 1.6, 2.7)).toFixed(4)})`;
+    S2g(t, [2.42, 2.55]);
+    S2tick.style.opacity = t > 2.35 && t < 2.68 ? 1 : 0;
+    twinkle(S2plus, t);
+    const pop = eob(seg(t, 2.66, 2.73)), grow = eo(seg(t, 2.73, 2.86));
+    disc(S2white, 960, 540, t < 2.66 ? 0 : lerp(120 * pop, 1250, grow));
+    const red = eo(seg(t, 2.9, 3.04));
+    disc(S2red, 960, 540, t < 2.9 ? 0 : (t < 3.1 ? lerp(0, 360, red) : lerp(360, 1320, eio(seg(t, 3.1, 3.4))) + 70 * (1 - seg(t, 3.3, 3.4))));
+    const ir = t < 3.10 ? 0 : lerp(20, 1260, eio(seg(t, 3.1, 3.4)));
+    S2iris.style.clipPath = `circle(${ir.toFixed(1)}px at 960px 540px)`;
+    S2bars.forEach((b, i) => { b.style.opacity = t > 2.95 && t < 3.25 ? 1 : 0; b.style.transform = `translateX(${(lerp(-200, 0, eox(seg(t, 2.95 + i * 0.04, 3.15)))).toFixed(0)}px)`; });
+  } else if (t < 4.05) {
+    show(S3);
+    S3img.style.transform = `scale(${lerp(1.0, 1.04, seg(t, 3.4, 4.05)).toFixed(4)}) translateX(${(-16 * (t - 3.4)).toFixed(1)}px)`;
+    twinkle(S3plus, t, 5);
+  } else if (t < 5.4) {
+    show(S4);
+    S4img.style.transform = `scale(1.06) translateX(${(-18 * (t - 4.05)).toFixed(1)}px)`;
+    S4bar.style.width = (lerp(1920, 70, eo(seg(t, 4.04, 4.75)))).toFixed(1) + 'px';
+    S4grid.style.opacity = eo(seg(t, 4.2, 4.6));
+    S4blocks.forEach((b, i) => {
+      const p = eox(seg(t, 4.95 + i * 0.05, 5.2 + i * 0.05));
+      b.el.style.transform = `translateX(${(b.d < 0 ? lerp(-b.w - 40, 0, p) : lerp(b.w + 40, 0, p)).toFixed(1)}px)`;
+    });
+  } else if (t < 6.8) {
+    show(S5);
+    S5img.style.transform = `scale(${lerp(1.1, 1.03, seg(t, 5.4, 6.8)).toFixed(4)})`;
+    S5warm.style.opacity = (0.4 + 0.6 * seg(t, 5.6, 6.2)).toFixed(3);
+    const tin = eio(seg(t, 5.42, 5.8));
+    S5title.style.transform = `translateX(${lerp(-1200, 0, tin).toFixed(1)}px)`;
+    S5ghost.style.transform = `translateX(${lerp(-1400, 0, eio(seg(t, 5.5, 5.92))).toFixed(1)}px)`;
+    S5ghost.style.opacity = (0.8 * (1 - seg(t, 5.85, 5.98))).toFixed(3);
+    S5bars.forEach((b, i) => { b.style.transform = `translateX(${lerp(-1920, 0, eox(seg(t, 5.4 + i * 0.06, 5.8 + i * 0.06))).toFixed(1)}px)`; });
+    const cx = lerp(560, 960, eio(seg(t, 6.12, 6.26))), cy = lerp(520, 540, eio(seg(t, 6.12, 6.26)));
+    const rr = t < 6.08 ? 0 : t < 6.12 ? 30 * eob(seg(t, 6.08, 6.12)) : lerp(30, 470, ei(seg(t, 6.12, 6.24)));
+    disc(S5red, cx, cy, t > 6.36 ? lerp(470, 1500, eio(seg(t, 6.36, 6.8))) : rr);
+    const wr = t < 6.24 ? 0 : t < 6.36 ? lerp(0, 290, eo(seg(t, 6.24, 6.36))) : lerp(290, 1380, eio(seg(t, 6.38, 6.8)));
+    disc(S5white, 960, 540, wr);
+    const ir = t < 6.38 ? 0 : lerp(0, 1260, eio(seg(t, 6.4, 6.8)));
+    S5iris.style.clipPath = `circle(${ir.toFixed(1)}px at 960px 540px)`;
+    S5photo.style.transform = `scale(${lerp(1.25, 1.05, seg(t, 6.4, 6.8)).toFixed(4)})`;
+    twinkle(S5plus, t);
+  } else if (t < 8.4) {
+    show(S6);
+    let k = 0; CUTS.forEach((c, i) => { if (t >= c[0]) k = i; });
+    S6shots.forEach((s, i) => {
+      s.el.style.display = i === k ? '' : 'none';
+      if (i === k) { s.el.style.transform = `scale(${lerp(1.12, 1.04, eo(seg(t, s.t0, s.t0 + 0.35))).toFixed(4)})`; s.g(t, i ? [s.t0] : []); }
+    });
+    S6tint.style.opacity = (k === 0 ? 0 : k === 3 ? 1 : 0.35).toFixed(3);
+  } else if (t < 10.05) {
+    show(M2.el);
+    M2.strips[0].style.transform = `translateX(${rowX(2, 9.9, -500, t).toFixed(1)}px)`;
+    M2.strips[1].style.transform = `translateX(${rowX(2, 9.9, 500, t).toFixed(1)}px)`;
+    M2.strips[2].style.transform = `translateX(${rowX(1, 9.9, -500, t).toFixed(1)}px)`;
+    const z = eio(seg(t, 9.68, 10.02));
+    M2.el.style.transformOrigin = '960px 540px';
+    M2.el.style.transform = `scale(${lerp(1, 3.0, z).toFixed(4)})`;
+    M2.el.style.filter = z > 0.02 && z < 0.98 ? `blur(${(Math.sin(z * Math.PI) * 7).toFixed(2)}px)` : 'none';
+    twinkle(M2plus, t);
+  } else if (t < 10.7) {
+    show(S7);
+    S7img.style.transform = `scale(${lerp(1.0, 1.05, seg(t, 10.05, 10.7)).toFixed(4)})`;
+    S7over.style.opacity = (0.15 + 0.85 * eio(seg(t, 10.1, 10.65))).toFixed(3);
+  } else {
+    show(S8);
+    S8.querySelector('.field').style.transform = `scale(${lerp(1.0, 1.04, seg(t, 10.7, 14)).toFixed(4)})`;
+    S8word.style.transform = `scale(${lerp(1.0, 1.03, seg(t, 10.7, 14)).toFixed(4)})`;
+    S8g(t, [12.5, 13.1]);
+    S8logo.style.transform = `scale(${Math.max(0, eob(seg(t, 11.2, 11.5))).toFixed(3)})`;
+    S8url.style.opacity = eo(seg(t, 11.5, 11.9)).toFixed(3);
+    twinkle(S8plus, t, 6);
+  }
+};
+const IMGS = ['red-4f477ff4', 'bw-88568ca9', 'red-c828ff62', 'bw-3435f592', 'col-0602dd85', 'bw-34559682'];
+window.ready = Promise.all([document.fonts.ready, ...IMGS.map((n) => new Promise((r) => { const i = new Image(); i.onload = i.onerror = r; i.src = A(n); }))]);
+window.render(0);
+</script>
+</body>
+</html>

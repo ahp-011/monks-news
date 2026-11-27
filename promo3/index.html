@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Monks News Explainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700;800&family=Poppins:wght@600;700&display=swap">
+<style>
+/* Monks News explainer: electric-blue field, big white scanline type, a captioned photo card, stepping squares. 1920x1080, render(t). */
+:root { --blue:#1370F1; --blue-hi:#4088F6; --blue-lo:#0960D3; --sq-lite:#9AC1EC; --sq-dark:#3B7ED5; --white:#FFFFFF; --ink:#062260;
+  --display:'Inter Tight', 'Helvetica Neue', Arial, sans-serif; --ui:'Poppins', 'Inter Tight', sans-serif; }
+html, body { margin:0; background:#000; }
+#stage { position:relative; width:1920px; height:1080px; overflow:hidden; color:var(--white); font-family:var(--display);
+  background:linear-gradient(128deg, var(--blue-hi) 0%, var(--blue) 45%, var(--blue-lo) 100%); }
+#stage * { box-sizing:border-box; }
+.abs { position:absolute; }
+.title { position:absolute; left:0; top:0; width:1920px; text-align:center; font-weight:700; letter-spacing:-.045em; line-height:1; white-space:nowrap;
+  color:transparent; -webkit-background-clip:text; background-clip:text;
+  background-image:repeating-linear-gradient(180deg, #FFFFFF 0 3px, #D4E9FF 3px 5px); }
+.slice { position:absolute; inset:0; }
+.grain { position:absolute; inset:-200px; pointer-events:none; opacity:.14; mix-blend-mode:soft-light;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E"); }
+.scan { position:absolute; inset:0; pointer-events:none; opacity:.06; background:repeating-linear-gradient(180deg, #fff 0 1px, transparent 1px 4px); }
+.card { position:absolute; overflow:hidden; background:var(--ink); box-shadow:0 0 0 1px rgba(255,255,255,.15); }
+.card .ph { position:absolute; inset:0; background-size:cover; background-position:center; }
+.cap { position:absolute; left:0; top:0; right:0; height:24px; padding:0 8px; display:flex; align-items:center; background:rgba(6,34,96,.82);
+  font:700 11.5px/1 var(--ui); letter-spacing:.02em; text-transform:uppercase; white-space:nowrap; }
+.date { position:absolute; left:9px; top:42px; font:700 17px/1 var(--ui); letter-spacing:.02em; text-transform:uppercase; white-space:nowrap; text-shadow:0 1px 6px rgba(6,34,96,.6); }
+.tag { position:absolute; left:0; bottom:0; padding:10px 16px; background:var(--white); color:var(--blue-lo); font:700 22px/1 var(--ui); letter-spacing:.06em; text-transform:uppercase; white-space:nowrap; }
+.flash { position:absolute; inset:0; background:#fff; opacity:0; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script>
+const clamp01 = (x) => Math.max(0, Math.min(1, x));
+const seg = (t, a, b) => clamp01((t - a) / (b - a));
+const lerp = (a, b, p) => a + (b - a) * p;
+const eo = (x) => 1 - Math.pow(1 - x, 3), eio = (x) => (x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const eox = (x) => (x >= 1 ? 1 : 1 - Math.pow(2, -10 * x));
+const hash = (i) => { const s = Math.sin(i * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+const $ = (h) => { const d = document.createElement('div'); d.innerHTML = h.trim(); return d.firstChild; };
+const stage = document.getElementById('stage');
+const add = (h, p = stage) => p.appendChild($(h));
+const A = (n) => 'assets/' + n + '.jpg';
+
+// ---------- the story: one title and one card per beat ----------
+const BEATS = [
+  { t: 0.3, title: 'Every morning', size: 205, card: 'card-morning', cap: 'Monks News &middot; Daily brief', date: 'No. 002' },
+  { t: 2.3, title: '80 sources', size: 265, card: 'card-papers', cap: 'Techmeme &middot; GitHub &middot; Figma &middot; HN', date: 'Worldwide', count: true },
+  { t: 4.3, title: 'Last 24 hours', size: 205, card: 'card-city', cap: 'Collected overnight', date: 'Today' },
+  { t: 6.3, title: 'For designers', size: 205, card: 'card-wire', cap: 'UI/UX &middot; Branding &middot; Figma', date: 'Design' },
+  { t: 8.3, title: '&amp; developers', size: 210, card: 'card-code', cap: 'Web &middot; Mobile &middot; AI', date: 'Dev' },
+];
+const T_SITE = 10.3, T_PAPER = 12.3, T_END = 14.3, END = 17;
+
+// ---------- furniture that stays on screen ----------
+const whiteBlock = add(`<div class="abs" style="left:1669px;top:126px;width:251px;height:138px;background:#fff;transform-origin:100% 50%"></div>`);
+const sqLite = add(`<div class="abs" style="left:1638px;top:797px;width:139px;height:139px;background:var(--sq-lite)"></div>`);
+const sqDark = add(`<div class="abs" style="left:1777px;top:936px;width:143px;height:144px;background:var(--sq-dark)"></div>`);
+const MARK = `<svg viewBox="0 0 32 32" style="width:58px;height:58px;display:block"><rect width="32" height="32" rx="8" fill="#FFFFFF"/><path transform="translate(16 16.4) scale(0.92) translate(-12.5 -11.8)" fill="#1370F1" d="M21.5382 7.90748C21.0683 6.79432 20.378 5.78426 19.5102 4.93458C18.6425 4.08491 17.609 3.40708 16.4722 2.94692C15.3373 2.48676 14.1204 2.25 12.89 2.25H11.7512C9.3644 2.25 7.0751 3.17796 5.3864 4.83148C3.6977 6.485 2.75 8.7247 2.75 11.0618V20.412C2.75 20.6583 2.8514 20.8951 3.02885 21.0707C3.20825 21.2445 3.45005 21.3438 3.7016 21.3438H13.2507C14.4324 21.3438 15.6024 21.1146 16.6944 20.6717C17.7864 20.2287 18.779 19.5814 19.6155 18.7623C20.4501 17.9432 21.1131 16.9732 21.5655 15.904C22.0179 14.8347 22.25 13.6872 22.25 12.5301V11.415C22.25 10.2102 22.0082 9.01874 21.5382 7.90748ZM17.3418 14.1263C15.9534 15.3178 14.2842 15.946 12.5136 15.946C10.743 15.946 9.0719 15.3178 7.68545 14.1263C7.3598 13.8495 7.3286 13.3664 7.61135 13.0494C7.89605 12.7306 8.38745 12.7 8.7131 12.9769C9.81095 13.9201 11.1252 14.4185 12.5136 14.4185C13.902 14.4185 15.2144 13.9201 16.3142 12.9769C16.6379 12.7 17.1312 12.7325 17.414 13.0494C17.6987 13.3664 17.6655 13.8495 17.3418 14.1263Z"/></svg>`;
+const lockup = add(`<div class="abs" style="left:1360px;top:62px;display:flex;align-items:center;gap:18px">${MARK}
+  <div style="font:800 38px/0.9 var(--display);letter-spacing:-.03em">Monks<br>News</div>
+  <i style="width:3px;height:58px;background:#fff;display:block"></i>
+  <div style="font:700 italic 34px/1 var(--display);letter-spacing:.01em">DAILY</div></div>`);
+
+// ---------- the title, with a slice glitch on entry ----------
+const titleHost = add(`<div class="abs" style="left:0;top:0;width:1920px;height:1080px"></div>`);
+function makeTitle(html, size) {
+  const box = add(`<div class="abs" style="left:0;top:${528 - size * 0.56}px;width:1920px;height:${size * 1.12}px;display:none"></div>`, titleHost);
+  const inner = `<div class="title" style="font-size:${size}px;line-height:${size * 1.12}px">${html}</div>`;
+  const base = add(`<div class="slice">${inner}</div>`, box);
+  const bands = [[8, 24], [38, 50], [62, 80]].map(([a, b]) => add(`<div class="slice" style="clip-path:inset(${a}% 0 ${100 - b}% 0);opacity:0">${inner}</div>`, box));
+  return { box, base, bands };
+}
+const titles = BEATS.map((b) => makeTitle(b.title, b.size));
+const countEl = titles[1].box; // "80" counts up on its own copy
+const endTitle = makeTitle('Monks News', 230);
+const url = add(`<div class="abs" style="left:0;width:1920px;top:690px;text-align:center;font:700 34px/1 var(--ui);letter-spacing:.14em;opacity:0">MONKS-NEWS.VERCEL.APP</div>`);
+
+function showTitle(tt, t, t0, t1) {
+  const on = t >= t0 && t < t1;
+  tt.box.style.display = on ? '' : 'none';
+  if (!on) return;
+  const p = eo(seg(t, t0, t0 + 0.28));
+  tt.box.style.transform = `scale(${lerp(1.06, 1, p).toFixed(4)})`;
+  tt.box.style.transformOrigin = '960px 50%';
+  const glitch = (t < t0 + 0.12) || (t1 - t < 0.08 && t1 < END - 0.1);
+  const f = Math.floor(t * 30);
+  tt.bands.forEach((b, i) => { b.style.opacity = glitch ? 1 : 0; if (glitch) b.style.transform = `translateX(${((hash(f * 3 + i) - .5) * 120).toFixed(0)}px)`; });
+  tt.base.style.opacity = glitch ? 0.55 : 1;
+  tt.base.style.transform = `translateY(${((1 - p) * 10).toFixed(1)}px)`;
+}
+
+// ---------- the card: small portrait photo bottom-left that grows into a screen ----------
+const CARD = { x: 101, y: 648, w: 246, h: 372 }, BIG = { x: 300, y: 150, w: 1320, h: 800 };
+const card = add(`<div class="card" style="left:0;top:0"></div>`);
+const photos = [...BEATS.map((b) => b.card), 'screen-home', 'screen-paper', 'card-cover'].map((n) => add(`<div class="ph" style="background-image:url(${A(n)});opacity:0"></div>`, card));
+add(`<div class="abs" style="left:0;top:0;right:0;height:42%;background:linear-gradient(rgba(6,34,96,.75), transparent)"></div>`, card);
+const cap = add(`<div class="cap"></div>`, card), date = add(`<div class="date"></div>`, card);
+const tag = add(`<div class="tag" style="opacity:0"></div>`, card);
+const flash = add(`<div class="flash"></div>`, card);
+
+const GRAIN = add(`<div class="grain"></div>`); add(`<div class="scan"></div>`);
+
+window.DURATION = END;
+window.render = function (t) {
+  const f = Math.floor(t * 30);
+  GRAIN.style.transform = `translate(${(hash(f) * 180 - 90).toFixed(0)}px,${(hash(f + 3) * 180 - 90).toFixed(0)}px)`;
+  stage.style.backgroundPosition = '0 0';
+
+  // titles
+  BEATS.forEach((b, i) => showTitle(titles[i], t, b.t, i < BEATS.length - 1 ? BEATS[i + 1].t : T_SITE));
+  showTitle(endTitle, t, T_END, END + 1);
+  if (t >= BEATS[1].t && t < BEATS[2].t) { // count up to 80
+    const n = Math.round(lerp(40, 80, eo(seg(t, BEATS[1].t, BEATS[1].t + 0.7))));
+    titles[1].box.querySelectorAll('.title').forEach((el) => { el.textContent = n + ' sources'; });
+  }
+  url.style.opacity = eo(seg(t, T_END + 0.5, T_END + 0.9));
+  url.style.transform = `translateY(${((1 - eo(seg(t, T_END + 0.5, T_END + 0.9))) * 16).toFixed(1)}px)`;
+
+  // card rectangle: enters, grows into the screens, shrinks back for the end
+  const enter = eox(seg(t, 0.15, 0.55));
+  const grow = eio(seg(t, T_SITE - 0.1, T_SITE + 0.45)), shrink = eio(seg(t, T_END - 0.1, T_END + 0.4));
+  const k = grow * (1 - shrink);
+  const r = { x: lerp(CARD.x, BIG.x, k), y: lerp(CARD.y, BIG.y, k), w: lerp(CARD.w, BIG.w, k), h: lerp(CARD.h, BIG.h, k) };
+  Object.assign(card.style, { left: r.x + 'px', top: (r.y + (1 - enter) * 460) + 'px', width: r.w + 'px', height: r.h + 'px' });
+  // which picture, caption and tag
+  let idx = 0; BEATS.forEach((b, i) => { if (t >= b.t - 0.02) idx = i; });
+  if (t >= T_SITE) idx = 5; if (t >= T_PAPER) idx = 6; if (t >= T_END) idx = 7;
+  photos.forEach((p, i) => { p.style.opacity = i === idx ? 1 : 0; });
+  photos[idx].style.transform = `scale(${(1.08 - 0.06 * seg(t, [...BEATS.map((b) => b.t), T_SITE, T_PAPER, T_END][idx], [...BEATS.map((b) => b.t), T_SITE, T_PAPER, T_END][idx] + 2)).toFixed(4)})`;
+  const small = idx < 5 || idx === 7;
+  cap.style.display = date.style.display = small && k < 0.05 ? '' : 'none';
+  if (idx < 5) { cap.innerHTML = BEATS[idx].cap; date.innerHTML = BEATS[idx].date; }
+  if (idx === 7) { cap.innerHTML = 'DM Bytes &middot; The paper edition'; date.innerHTML = 'Every day'; }
+  tag.style.opacity = idx === 5 || idx === 6 ? eo(seg(t, (idx === 5 ? T_SITE : T_PAPER) + 0.35, (idx === 5 ? T_SITE : T_PAPER) + 0.6)) : 0;
+  tag.innerHTML = idx === 6 ? 'DM Bytes &middot; Read it like a paper' : 'The website &middot; monks-news.vercel.app';
+  // a one-frame white flash on every swap
+  const swaps = [...BEATS.slice(1).map((b) => b.t), T_SITE, T_PAPER, T_END];
+  flash.style.opacity = swaps.some((s) => t >= s && t < s + 1 / 30 + 0.001) ? 0.85 : 0;
+  // screens fade the title out while the card is big
+  titleHost.style.opacity = (1 - k).toFixed(3);
+
+  // white block: slides in, then a quick shrink and regrow on every swap
+  const wIn = eox(seg(t, 0.05, 0.4));
+  let pulse = 1; swaps.forEach((s) => { if (t >= s - 0.05 && t < s + 0.25) pulse = Math.min(pulse, Math.abs(lerp(-1, 1, seg(t, s - 0.05, s + 0.25)))); });
+  whiteBlock.style.transform = `scaleX(${(wIn * lerp(0.25, 1, eo(pulse))).toFixed(3)})`;
+  // squares step between three layouts on each swap
+  const step = swaps.filter((s) => t >= s).length % 3;
+  const L = [[1638, 797, 1777, 936], [1777, 797, 1638, 936], [1638, 936, 1777, 797]][step];
+  const sIn = eox(seg(t, 0.25, 0.6));
+  sqLite.style.transform = `translate(${L[0] - 1638}px,${L[1] - 797 + (1 - sIn) * 300}px)`;
+  sqDark.style.transform = `translate(${L[2] - 1777}px,${L[3] - 936 + (1 - sIn) * 300}px)`;
+  lockup.style.opacity = eo(seg(t, 0.1, 0.4));
+  lockup.style.transform = `translateY(${((1 - eo(seg(t, 0.1, 0.4))) * -20).toFixed(1)}px) scale(${t >= T_END ? lerp(1.08, 1, eo(seg(t, T_END, T_END + 0.4))) : 1})`;
+  lockup.style.transformOrigin = '100% 50%';
+};
+window.ready = Promise.all([document.fonts.ready, ...['card-morning', 'screen-home'].map((n) => new Promise((r) => { const i = new Image(); i.onload = i.onerror = r; i.src = A(n); }))]);
+window.render(0);
+</script>
+</body>
+</html>

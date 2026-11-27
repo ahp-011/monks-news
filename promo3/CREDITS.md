@@ -1,0 +1,48 @@
+# Photo credits
+
+All photos are public domain (CC0 / PDM), found through Openverse.
+
+- 004e7138: "Coding on a computer screen" (CC0, rawpixel) https://www.rawpixel.com/image/432709/free-photo-image-java-source-code-computer-programming
+- 0602dd85: "Free close two people hands" (CC0, rawpixel) https://www.rawpixel.com/image/5927609/photo-image-background-public-domain-hands
+- 0dfbd7e6: "Free wooden working desk electronic" (CC0, rawpixel) https://www.rawpixel.com/image/5912371/image-public-domain-wooden-person
+- 284f864b: "Modern Graphic Designer Essentials" (CC0, rawpixel) https://www.rawpixel.com/image/5967350/modern-graphic-designer-essentials
+- 2d4480be: "Free web design wireframes paper" (CC0, rawpixel) https://www.rawpixel.com/image/5926265/photo-image-paper-public-domain-art
+- 3435f592: "New York City morning light" (CC0, rawpixel) https://www.rawpixel.com/image/3370150/free-photo-image-new-york-city-building-sunset
+- 34559682: "Free close view man working" (CC0, rawpixel) https://www.rawpixel.com/image/5928256/photo-image-background-public-domain-person
+- 3ad7a3d9: "Web Design On Computer" (CC0, rawpixel) https://www.rawpixel.com/image/5968585/web-design-computer
+- 3eee477d: "Free man designing website layout" (CC0, rawpixel) https://www.rawpixel.com/image/5926264/photo-image-background-public-domain-person
+- 47b8eaaf: "Free code computer screen image" (CC0, rawpixel) https://www.rawpixel.com/image/5904551/photo-image-background-public-domain-technology
+- 4a186e1b: "Antique newspaper" (CC0, rawpixel) https://www.rawpixel.com/image/6034484/antique-newspaper-free-public-domain-cc0-image
+- 4f477ff4: "Officers U.S. Customs Border Protection" (CC0, rawpixel) https://www.rawpixel.com/image/8723808/photo-image-border-public-domain-person
+- 4f5b78a5: "close-up camera lens resting fabric" (CC0, rawpixel) https://www.rawpixel.com/image/3296150/free-photo-image-lenses-photography-camera-lens-blur-background
+- 56258858: "Latte art tulip pattern cup" (CC0, rawpixel) https://www.rawpixel.com/image/3283526/free-photo-image-coffee-art-cup
+- 5e3be13b: "Free code computer screen image" (CC0, rawpixel) https://www.rawpixel.com/image/5924954/photo-image-background-public-domain-technology
+- 61a6fcdd: "Free smartphone camera image" (CC0, rawpixel) https://www.rawpixel.com/image/5914504/photo-image-phone-public-domain-hand
+- 63697d58: "None" (CC0, rawpixel) https://www.rawpixel.com/image/5906148/free-public-domain-cc0-photo
+- 66e291b9: "Wireframe Web Design Notebook" (CC0, rawpixel) https://www.rawpixel.com/image/5966990/wireframe-web-design-notebook
+- 67d3cd32: "Free close hand typing keyboard" (CC0, rawpixel) https://www.rawpixel.com/image/5921524/photo-image-background-public-domain-hand
+- 69742e65: "MacBook Computer & Espresso Coffee" (CC0, rawpixel) https://www.rawpixel.com/image/5968658/macbook-computer-espresso-coffee
+- 6c1ee3bf: "Woman typing keyboard" (CC0, rawpixel) https://www.rawpixel.com/image/5906041/photo-image-background-public-domain-hand
+- 79c3f431: "Free person working photo" (CC0, rawpixel) https://www.rawpixel.com/image/5908391/image-phone-public-domain-person
+- 7e3c7851: "Desk book laptop" (CC0, rawpixel) https://www.rawpixel.com/image/6027565/photo-image-books-public-domain-pen
+- 86772f3a: "Cityscape Ho Chi Minh, Vietnam" (CC0, rawpixel) https://www.rawpixel.com/image/3285758/free-photo-image-chi-minh-urban-architecture-sunset-road-png
+- 88568ca9: "Free graphic designer working computer" (CC0, rawpixel) https://www.rawpixel.com/image/5912545/image-background-public-domain-technology
+- 899d9d73: "Free code computer screen image" (CC0, rawpixel) https://www.rawpixel.com/image/5906903/photo-image-background-public-domain-technology
+- 8cd78da2: "Free camera lens image" (CC0, rawpixel) https://www.rawpixel.com/image/5903883/photo-image-public-domain-tech-camera
+- 9a2e7d49: "Free view notebook computer work" (CC0, rawpixel) https://www.rawpixel.com/image/5919206/image-book-public-domain-technology
+- 9abdd9b8: "Free working together image" (CC0, rawpixel) https://www.rawpixel.com/image/5926233/photo-image-background-public-domain-technology
+- 9bde49a4: "Drone view camera lens, dials" (CC0, rawpixel) https://www.rawpixel.com/image/3337173/free-photo-image-camera-lens-birds-eye-view
+- b21c60f2: "MacBook laptops, designer desk, location" (CC0, rawpixel) https://www.rawpixel.com/image/6111458/photo-image-public-domain-laptop-technology
+- b247baf9: "Free work desk photo" (CC0, rawpixel) https://www.rawpixel.com/image/5907437/photo-image-public-domain-computer-coffee
+- b90c1d28: "Programmer writing code laptop, location" (CC0, rawpixel) https://www.rawpixel.com/image/6113542/photo-image-public-domain-logo-laptop
+- ba97dac9: "man shooting picture cup coffee" (CC0, rawpixel) https://www.rawpixel.com/image/447564/free-photo-image-smartphone-bar-beverage
+- c828ff62: "Team meeting. View" (CC0, rawpixel) https://www.rawpixel.com/image/8812100/photo-image-laptop-people-business
+- cbfaf88c: "Free man's hand typing keyboard" (CC0, rawpixel) https://www.rawpixel.com/image/5921683/photo-image-background-phone-public-domain
+- cc2caab7: "Morning traffic freeway" (CC0, rawpixel) https://www.rawpixel.com/image/3237450/free-photo-image-building-car-cc0
+- dce52ad9: "Web Design Sketch Layouts" (CC0, rawpixel) https://www.rawpixel.com/image/5967341/web-design-sketch-layouts
+- e340c582: "Free newspaper table closeup image" (CC0, rawpixel) https://www.rawpixel.com/image/5920382/photo-image-paper-public-domain-wooden
+- ecacfc43: "Free computer code screen image" (CC0, rawpixel) https://www.rawpixel.com/image/5916657/image-public-domain-computer-free
+- ecf2ee75: "Woman Web Designer on MacBook" (CC0, rawpixel) https://www.rawpixel.com/image/5968513/woman-web-designer-macbook
+- ed7f50e9: "Coding on a computer screen" (CC0, rawpixel) https://www.rawpixel.com/image/432378/free-photo-image-software-programming-computer
+- ee34a093: "Free web design sketch ideas" (CC0, rawpixel) https://www.rawpixel.com/image/5926533/photo-image-paper-public-domain-art
+- f9a93dd1: "Free folded newspaper table closeup" (CC0, rawpixel) https://www.rawpixel.com/image/5924410/photo-image-public-domain-newspaper-table

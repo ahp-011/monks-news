@@ -21,6 +21,7 @@ const toc = [{ key: 'in-brief', label: 'In brief', n: issue.brief.length }, ...g
     <header class="issue__head">
       <p class="label reveal">{fmt.no(issue.number)} &nbsp; {fmt.long(issue.date)} &nbsp; {issue.stories.length + issue.tools.length} stories</p>
       <h1 data-reveal="text">The brief for {fmt.dayMonth(issue.date)}.</h1>
+      <a class="btn btn--bytes reveal" href={`/paper/${issue.date}/`} style="margin-top:20px">Read this issue in DM Bytes</a>
     </header>
 
     <aside class="toc" aria-label="In this issue">

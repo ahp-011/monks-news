@@ -1,0 +1,7 @@
+---
+import Paper from '../../components/Paper.astro';
+import { issues, type Issue } from '../../lib/data';
+export function getStaticPaths() { return issues.map((issue) => ({ params: { date: issue.date }, props: { issue } })); }
+const { issue } = Astro.props as { issue: Issue };
+---
+<Paper issue={issue} />

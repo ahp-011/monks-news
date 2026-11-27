@@ -50,6 +50,7 @@ const footSections = SECTIONS.filter((s) => ['industry', 'design-ux', 'branding'
         <nav class="nav__links" aria-label="Main">
           {links.map((l) => <a class="nav__link" href={l.href} aria-current={active === l.key ? 'page' : undefined}>{l.label}</a>)}
         </nav>
+        <a class="bytes" href="/paper/" title="Today's issue as a newspaper">DM Bytes</a>
         <button class="icon-btn" type="button" data-theme-toggle aria-label="Switch to dark theme">
           <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4" /><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor" /></svg>
         </button>
@@ -69,6 +70,7 @@ const footSections = SECTIONS.filter((s) => ['industry', 'design-ux', 'branding'
     </div>
     <nav class="drawer__links" aria-label="Mobile">
       {links.map((l) => <a href={l.href} aria-current={active === l.key ? 'page' : undefined}>{l.label}</a>)}
+      <a href="/paper/" class="drawer__bytes">DM Bytes <span>Read as a newspaper</span></a>
     </nav>
     <p class="label" style="margin-top:28px">Show news for</p>
     <TeamSwitch />

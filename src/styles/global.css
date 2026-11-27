@@ -76,6 +76,16 @@ h1, h2, h3, h4, p { margin: 0; }
 .icon-btn svg { width: 17px; height: 17px; }
 .nav__menu { display: none; }
 
+/* DM Bytes: the paper edition */
+.bytes { font: 600 13px var(--mono); padding: 6px 12px; border-radius: 6px; background: #2343c9; color: #fff; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; transition: transform .2s var(--ease), background .2s; }
+.bytes::before { content: ''; width: 12px; height: 9px; border: 1.5px solid currentColor; border-radius: 1px; box-shadow: inset 4px 0 0 -2.5px currentColor; }
+.bytes:hover { background: #ff5b1f; transform: translateY(-1px); }
+.btn.btn--bytes { background: #2343c9; color: #fff; }
+.btn.btn--bytes:hover { background: #ff5b1f; }
+.drawer__bytes { color: #2343c9; }
+.drawer__bytes span { font: 500 12px var(--mono); color: var(--ink-3); letter-spacing: 0; }
+:root[data-theme="dark"] .drawer__bytes { color: #8fa3ff; }
+
 /* Team switch */
 .team { display: inline-flex; padding: 3px; gap: 2px; background: var(--chip); border-radius: 9px; }
 .team button { border: 0; background: transparent; font: 500 12px var(--mono); padding: 5px 9px; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2); white-space: nowrap; }
@@ -328,6 +338,9 @@ html:not(.js) [data-reveal="text"] .tw__i { transform: none; }
 }
 @media (max-width: 900px) {
   .nav__links, .nav__right > .team { display: none; }
+  .bytes { padding: 6px 10px; font-size: 12px; }
+  .nav .brand__tag { display: none; }
+  .nav .brand { white-space: nowrap; }
   .nav__menu { display: grid; }
   .hero__top, .feature, .brief { grid-template-columns: 1fr; }
   .card--side { flex-direction: column; }

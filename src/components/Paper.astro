@@ -1,0 +1,82 @@
+---
+import { layoutPaper } from '../lib/paper/layout';
+import '../lib/paper/paper.css';
+import type { Issue } from '../lib/data';
+const { issue } = Astro.props as { issue: Issue };
+const p = layoutPaper(issue);
+const title = `DM Bytes · ${p.no}, ${p.longDate}`;
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>{title}</title>
+  <meta name="description" content={`DM Bytes, the morning paper from Monks News: ${issue.headline}`} />
+  <meta name="theme-color" content="#2343c9" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&family=IBM+Plex+Mono:wght@400;500&display=swap" />
+</head>
+<body>
+  <a class="home" href="/">← Monks News</a>
+  <div class="stage" id="stage">
+    <div class="scaler" id="scaler">
+      <div class="book is-closed-front" id="book" data-labels={JSON.stringify(p.labels)} set:html={p.leaves} />
+    </div>
+  </div>
+  <nav class="bar" aria-label="Turn pages">
+    <button type="button" id="prev" aria-label="Previous page">←</button>
+    <div class="dots" id="dots" aria-hidden="true"></div>
+    <span class="hint" id="hint" aria-live="polite">Cover</span>
+    <button type="button" id="next" aria-label="Next page">→</button>
+  </nav>
+  <script is:inline>
+  (function () {
+    var book = document.getElementById('book');
+    var leaves = [].slice.call(book.querySelectorAll('.leaf'));
+    var labels = JSON.parse(book.dataset.labels || '[]');
+    var n = leaves.length, s = 0;
+    var dots = document.getElementById('dots'), hint = document.getElementById('hint');
+    var prev = document.getElementById('prev'), next = document.getElementById('next');
+    var phone = function () { return matchMedia('(max-width: 899px)').matches; };
+    for (var i = 0; i <= n; i++) dots.appendChild(document.createElement('i'));
+    function render(moving) {
+      leaves.forEach(function (l, k) { var f = k < s; l.classList.toggle('flipped', f); l.style.zIndex = k === moving ? n + 2 : (f ? k + 1 : n - k); });
+      book.classList.toggle('is-closed-front', s === 0);
+      book.classList.toggle('is-closed-back', s === n);
+      [].forEach.call(dots.children, function (d, k) { d.classList.toggle('on', k === s); });
+      hint.textContent = labels[s] || '';
+      prev.disabled = s === 0; next.disabled = s === n;
+      if (moving != null) setTimeout(function () { render(); }, 960);
+    }
+    function go(d) { var t = Math.max(0, Math.min(n, s + d)); if (t === s) return; var m = d > 0 ? s : t; s = t; render(m); }
+    prev.addEventListener('click', function () { go(-1); });
+    next.addEventListener('click', function () { go(1); });
+    leaves.forEach(function (l, k) { l.addEventListener('click', function (e) { if (e.target.closest('a') || phone()) return; go(k < s ? -1 : 1); }); });
+    addEventListener('keydown', function (e) { if (e.key === 'ArrowRight' || e.key === 'PageDown') go(1); if (e.key === 'ArrowLeft' || e.key === 'PageUp') go(-1); });
+    var x0 = null;
+    addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+    addEventListener('touchend', function (e) { if (x0 == null || phone()) return; var dx = e.changedTouches[0].clientX - x0; x0 = null; if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1); });
+    var scaler = document.getElementById('scaler');
+    function fit() {
+      if (phone()) { scaler.style.transform = ''; return; }
+      var k = Math.min((innerWidth - 48) / 1200, (innerHeight - 110) / 840);
+      scaler.style.transform = 'scale(' + Math.max(0.3, k) + ')';
+    }
+    // shrink type a little on any page that still runs long
+    function fitPages() {
+      if (phone()) return;
+      document.querySelectorAll('.pg').forEach(function (pg) {
+        var t = pg.querySelector(':scope > .push, :scope > .push2') || pg, z = 1;
+        t.style.zoom = '';
+        while (pg.scrollHeight > pg.clientHeight + 1 && z > 0.8) { z -= 0.03; t.style.zoom = z; }
+      });
+    }
+    addEventListener('resize', fit); fit(); render();
+    (document.fonts ? document.fonts.ready : Promise.resolve()).then(fitPages);
+  })();
+  </script>
+</body>
+</html>

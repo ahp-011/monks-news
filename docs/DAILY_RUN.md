@@ -12,7 +12,12 @@ It runs by itself in **GitHub Actions** (`.github/workflows/daily.yml`). Nobody 
 
 ## How an issue is made (`scripts/daily/publish.mjs`)
 
-1. **Collect.** Items from the last 24 hours (48 if it's a slow day) from the feeds in `scripts/daily/sources.mjs`: official changelogs and blogs (Figma, Vercel, Next.js, React, Chrome, WebKit, GitHub, OpenAI, Google, Cursor, Expo, Supabase, Apple, Android and more), design and dev publications, Hacker News stories with 60+ points, fast-rising new GitHub repos and Product Hunt launches. Shopping deals are filtered out, and links used in the last three issues are skipped.
+1. **Collect.** Items from the last 24 hours (48 on a slow day) from about 80 sources in `scripts/daily/sources.mjs`, worldwide:
+   - What everyone is covering: Techmeme, and Google News searches for design tools, UX, branding, web, mobile and AI news.
+   - Trend signals: Hacker News stories with 60+ points, GitHub trending today (all, TypeScript, Python), fast-rising new repos, Hugging Face's most upvoted AI papers, Product Hunt launches.
+   - Official changelogs and blogs: Figma, Vercel, Next.js, React, Chrome, WebKit, MDN, GitHub, OpenAI, Google, Claude, Cursor, Expo, Supabase, Cloudflare, Apple, Android and more.
+   - Publications: The Verge, TechCrunch, Wired, MIT Technology Review, Ars Technica, 9to5Mac/Google, InfoQ, The New Stack, Smashing, UX Collective, NN/g, Fast Company Co.Design, Dezeen, Designboom, Muzli, Codrops and more.
+   Shopping deals and off-topic items (games, mods, crypto) are filtered out, links from the last three issues are skipped, and the same story from several outlets is merged into one item that counts how many outlets cover it. Items are ranked by one "heat" score: points, stars, upvotes, number of outlets, trending today and freshness.
 2. **Write.** Google Gemini (free tier) picks 18–26 of the hottest, most useful items and writes the headline, summary, "Why it matters", "For the team", "In brief", "Don't miss today" and tool ratings. It can only use the collected items: links, dates and trend signals (points, stars) are always taken from the items themselves, never from the AI.
 3. **Check.** `scripts/validate.mjs` enforces freshness (60% dated today or yesterday), team actions on practical stories and correct structure. Anything the AI gets wrong is repaired or dropped.
 4. **Fallback.** If Gemini is down, over quota or produces an invalid issue, a links-only issue is published instead: the top-ranked items with their own descriptions, balanced across sections. A day is never skipped.

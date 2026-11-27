@@ -10,7 +10,7 @@
 import { readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { XMLParser } from 'fast-xml-parser';
-import { FEEDS, RELEVANT } from './sources.mjs';
+import { FEEDS, RELEVANT, OFFTOPIC } from './sources.mjs';
 
 const ROOT = new URL('../../', import.meta.url);
 const ISSUES = new URL('src/content/issues/', ROOT);
@@ -65,13 +65,22 @@ async function collect(windowH) {
   const since = now - windowH * H;
   const out = [];
   const JUNK = /\b(deals?|discount|% off|\$\d+ off|best price|black friday|cyber monday|prime day|on sale|sale price|coupon|giveaway|sponsored)\b/i;
-  const add = (c, min = since) => { if (c.title && !JUNK.test(c.title) && /^https?:\/\//.test(c.url) && c.date > min && c.date <= now + H) out.push(c); };
+  const add = (c, min = since) => { if (c.title && !JUNK.test(c.title) && !OFFTOPIC.test(`${c.title} ${c.desc ?? ''}`) && /^https?:\/\//.test(c.url) && c.date > min && c.date <= now + H) out.push(c); };
 
   const feeds = await Promise.allSettled(FEEDS.map(async (f) => {
     const items = feedItems(xml.parse(await get(f.url)));
     const min = f.section === 'learning' ? now - 6 * 24 * H : since;
-    const fresh = items.filter((i) => i.date > min);
-    for (const i of fresh.slice(0, 12)) add({ ...i, desc: cut(i.desc, 420), source: f.name, section: f.section, team: f.team, kind: f.kind ?? 'news', official: !!f.official }, min);
+    const fresh = f.trending ? items : items.filter((i) => i.date > min);
+    for (const i of fresh.slice(0, f.limit ?? 12)) {
+      const c = { ...i, desc: cut(i.desc, 420), source: f.name, section: f.section, team: f.team, kind: f.kind ?? 'news', official: !!f.official };
+      if (f.google) { // "Headline - Publisher": keep the publisher as the source
+        const m = c.title.match(/^(.*) - ([^-]{2,60})$/);
+        if (m) { c.title = m[1]; c.source = m[2].trim(); }
+        if (c.desc.startsWith(c.title)) c.desc = '';
+      }
+      if (f.trending) { if (!(c.date > 0)) c.date = now - H; c.title = c.title.replace(/^\s+|\s+$/g, ''); c.scoreLabel = 'Trending on GitHub today'; c.trending = true; c.relevant = RELEVANT.test(`${c.title} ${c.desc}`); }
+      add(c, f.trending ? 0 : min);
+    }
     return fresh.length;
   }));
   feeds.forEach((r, i) => { if (r.status === 'rejected') log(`feed failed: ${FEEDS[i].name} (${r.reason?.message ?? r.reason})`); });
@@ -85,13 +94,22 @@ async function collect(windowH) {
     }
   } catch (e) { log('Hacker News failed:', e.message); }
 
+  // Hugging Face: AI papers the community is upvoting today
+  try {
+    const papers = await get('https://huggingface.co/api/daily_papers', { json: true });
+    for (const p of papers.sort((a, b) => (b.paper?.upvotes ?? 0) - (a.paper?.upvotes ?? 0)).slice(0, 8)) {
+      if (!p.paper?.id) continue;
+      add({ title: strip(p.paper.title), url: `https://huggingface.co/papers/${p.paper.id}`, date: Date.parse(p.publishedAt || p.paper.publishedAt) || now, desc: cut(strip(p.paper.summary || ''), 380), source: 'Hugging Face Papers', section: 'ai-engineering', team: 'dev', kind: 'news', score: p.paper.upvotes, scoreLabel: `${p.paper.upvotes} upvotes on Hugging Face Papers` }, now - 3 * 24 * H);
+    }
+  } catch (e) { log('Hugging Face failed:', e.message); }
+
   // GitHub: new repositories gaining stars fast
   try {
     const d = new Date(now - 7 * 24 * H).toISOString().slice(0, 10);
     const headers = { accept: 'application/vnd.github+json', ...(process.env.GITHUB_TOKEN ? { authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}) };
     const { items } = await get(`https://api.github.com/search/repositories?q=created:>${d}+stars:>80&sort=stars&order=desc&per_page=40`, { json: true, headers });
     for (const r of items) {
-      out.push({ title: `${r.full_name}: ${strip(r.description || '')}`.slice(0, 160), url: r.html_url, date: Date.parse(r.pushed_at) || now, desc: cut(`${strip(r.description || '')}${r.language ? ` (${r.language})` : ''}. Topics: ${(r.topics || []).slice(0, 6).join(', ')}`, 300), source: 'GitHub', section: 'open-source', team: 'dev', kind: 'repo', score: r.stargazers_count, scoreLabel: `${compact(r.stargazers_count)} GitHub stars in its first week`, relevant: RELEVANT.test(`${r.description} ${(r.topics || []).join(' ')}`), name: r.name });
+      out.push({ title: `${r.full_name}: ${strip(r.description || '')}`.slice(0, 160), url: r.html_url, date: Date.parse(r.pushed_at) || now, desc: cut(`${strip(r.description || '')}${r.language ? ` (${r.language})` : ''}. Topics: ${(r.topics || []).slice(0, 6).join(', ')}`, 300), source: 'GitHub', section: 'open-source', team: 'dev', kind: 'repo', score: r.stargazers_count, scoreLabel: `${compact(r.stargazers_count)} GitHub stars in its first week`, relevant: RELEVANT.test(`${r.description} ${(r.topics || []).join(' ')}`) && !OFFTOPIC.test(`${r.full_name} ${r.description}`), name: r.name });
     }
   } catch (e) { log('GitHub failed:', e.message); }
 
@@ -103,8 +121,33 @@ async function collect(windowH) {
     if (seen.has(k1) || seen.has(k2)) return false;
     seen.add(k1); seen.add(k2); return true;
   });
-  uniq.sort((a, b) => (b.score ?? 0) - (a.score ?? 0) || b.date - a.date);
-  return uniq.slice(0, 220).map((c, i) => ({ ...c, cid: `c${i + 1}` }));
+  const STOP = new Set('with from that this have will into your about after over just more than they their what when which while says said new how why the and for are its'.split(' '));
+  const words = (t) => new Set(t.toLowerCase().replace(/[^a-z0-9.+# ]/g, ' ').split(/\s+/).filter((w) => w.length > 3 && !STOP.has(w)));
+  const W = uniq.map((c) => words(c.title));
+  const merged = new Set();
+  for (let i = 0; i < uniq.length; i++) {
+    if (merged.has(i)) continue;
+    const outlets = new Set([uniq[i].source]); const alts = [];
+    for (let j = i + 1; j < uniq.length; j++) {
+      if (merged.has(j)) continue;
+      let k = 0; for (const w of W[i]) if (W[j].has(w)) k++;
+      if (k >= 3 && k / Math.min(W[i].size, W[j].size) >= 0.6) { merged.add(j); outlets.add(uniq[j].source); alts.push(uniq[j]); }
+    }
+    const c = uniq[i];
+    // keep the strongest version (official source or highest score) as the main item
+    const best = [c, ...alts].sort((a, b) => (b.official - a.official) || ((b.score ?? 0) - (a.score ?? 0)))[0];
+    if (best !== c) { uniq[i] = { ...best, discuss: best.discuss ?? c.discuss, score: Math.max(best.score ?? 0, c.score ?? 0) || undefined, scoreLabel: best.scoreLabel ?? c.scoreLabel }; }
+    uniq[i].coverage = outlets.size;
+    uniq[i].alsoIn = [c, ...alts].filter((x) => x.url !== uniq[i].url).slice(0, 2).map((x) => ({ name: x.source, url: x.url }));
+    if (outlets.size >= 3 && !uniq[i].scoreLabel) uniq[i].scoreLabel = `Covered by ${outlets.size} outlets today`;
+  }
+  // off-topic repos (games, mods, personal tools) are not news for designers and developers
+  const items = uniq.filter((c, i) => !merged.has(i) && !(c.kind === 'repo' && !c.relevant));
+  // one comparable heat score: HN points, a share of GitHub stars, outlets covering it, trending today, freshness
+  const heat = (c) => (c.source === 'Hacker News' ? (c.score ?? 0) : c.kind === 'repo' ? Math.min(400, (c.score ?? 0) / 6) : c.source === 'Hugging Face Papers' ? (c.score ?? 0) * 3 : (c.official ? 160 : 70))
+    + (c.coverage - 1) * 140 + (c.trending ? 150 : 0) - Math.max(0, (now - c.date) / H - 6) * 2;
+  items.sort((a, b) => heat(b) - heat(a) || b.date - a.date);
+  return items.slice(0, 300).map((c, i) => ({ ...c, cid: `c${i + 1}` }));
 }
 
 // ---------------------------------------------------------------- 2. write with Gemini
@@ -113,7 +156,7 @@ const BRIEF = `You are the editor of Monks News, the morning brief that designer
 - Dev Monks (team "dev"): AI engineering (agents, custom LLM solutions, RAG, automation); SaaS platforms (multi-tenant, portals, MVPs, backend and APIs); mobile apps (iOS, Android, cross-platform).
 - Client industries: FinTech, EdTech, travel, fitness, health, FMCG, SaaS startups.
 
-Pick the hottest and most USEFUL items from the candidates. The test for every story: would a designer or developer here do something differently today because they read it? Skip business gossip, stock moves, politics, lawsuits and announcements with nothing to try, unless they truly change the work. Prefer the newest items (last 24 hours) and items with high scores. Use ONLY facts in the candidate text; never invent numbers, dates, quotes or features. If a claim is a vendor claim, say so. Plain, specific sentences, sentence-case headlines, no hype words, no emoji. The two agencies are one company: never write the names "Design Monks" or "Dev Monks" in any text; say "designers", "developers" or "the team". Never mention publishing times.
+Pick the hottest and most USEFUL items from the candidates. The test for every story: would a designer or developer here do something differently today because they read it? Skip business gossip, stock moves, politics, lawsuits and announcements with nothing to try, unless they truly change the work. Prefer the newest items (last 24 hours), items with high scores, items covered by several outlets ("outlets") and items trending on GitHub. Cover news from anywhere in the world, not one country. Use ONLY facts in the candidate text; never invent numbers, dates, quotes or features. If a claim is a vendor claim, say so. Plain, specific sentences, sentence-case headlines, no hype words, no emoji. The two agencies are one company: never write the names "Design Monks" or "Dev Monks" in any text; say "designers", "developers" or "the team". Never mention publishing times.
 
 Sections: industry (AI industry news), design-ux (product design and UX), branding (branding and identity), development (web, mobile and SaaS), ai-engineering (agents, LLM APIs, RAG, automation), tools (new AI tools), trends (trends to watch), inspiration (design inspiration), open-source (GitHub and open source), social (what designers and devs are discussing), learning (guides worth the time), opportunities (client demand, awards, events), experiment (one hands-on task for today, based on a story).`;
 
@@ -154,7 +197,7 @@ async function writeWithGemini(cands) {
   if (process.env.MOCK_DRAFT) return JSON.parse(readFileSync(process.env.MOCK_DRAFT, 'utf8')); // for local testing
   const key = process.env.GEMINI_API_KEY;
   if (!key) { log('GEMINI_API_KEY not set'); return null; }
-  const lines = cands.map((c) => JSON.stringify({ cid: c.cid, source: c.source, kind: c.kind, title: c.title, text: c.desc, age_hours: Math.max(0, Math.round((now - c.date) / H)), score: c.scoreLabel || undefined, hint: `${c.section}/${c.team}` }));
+  const lines = cands.map((c) => JSON.stringify({ cid: c.cid, source: c.source, kind: c.kind, title: c.title, text: c.desc, age_hours: Math.max(0, Math.round((now - c.date) / H)), score: c.scoreLabel || undefined, outlets: c.coverage > 1 ? c.coverage : undefined, hint: `${c.section}/${c.team}` }));
   const prompt = `${BRIEF}\n\nToday in Dhaka is ${TODAY}.\n\n${SHAPE}\n\nCandidates (one JSON object per line):\n${lines.join('\n')}`;
   for (const model of await geminiModels(key)) {
     for (let attempt = 1; attempt <= 3; attempt++) {
@@ -197,6 +240,7 @@ function assemble(draft, cands, number, mode) {
     used.add(c.cid);
     const deeper = [];
     if (c.discuss && c.discuss !== c.url) deeper.push({ name: `Discussion on Hacker News${c.comments ? ` (${c.comments} comments)` : ''}`, url: c.discuss });
+    for (const a of c.alsoIn ?? []) if (deeper.length < 2 && a.url !== c.url) deeper.push({ name: `Also covered by ${a.name}`, url: a.url });
     for (const d of s.deeper ?? []) { const x = byCid.get(d); if (x && x.url !== c.url && deeper.length < 3) deeper.push({ name: `${x.source}: ${cut(x.title, 70)}`, url: x.url }); }
     stories.push({
       id: uid(s.title || c.title), section, team: TEAMS.includes(s.team) ? s.team : c.team, featured: !!s.featured,
@@ -249,7 +293,7 @@ function assemble(draft, cands, number, mode) {
 // No-AI fallback: rank the candidates and use their own descriptions.
 function fallbackDraft(cands) {
   // Comparable score across sources: HN points, a share of GitHub stars, and a base for official news.
-  const weight = (c) => (c.source === 'Hacker News' ? c.score : c.kind === 'repo' ? c.score / 4 : (c.official ? 180 : 90) - (now - c.date) / H)
+  const weight = (c) => (c.coverage - 1) * 120 + (c.trending ? 140 : 0) + (c.source === 'Hacker News' ? c.score : c.kind === 'repo' ? (c.score ?? 0) / 4 : (c.official ? 180 : 90) - (now - c.date) / H)
     * (c.source === 'DEV Community' ? 0.3 : 1);
   const pool = cands.filter((c) => (c.source !== 'Hacker News' && c.kind !== 'repo') || c.relevant)
     .map((c) => ({ c, w: weight(c), sec: c.kind === 'product' ? 'tools' : c.section }))

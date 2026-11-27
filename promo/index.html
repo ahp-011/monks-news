@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Monks News Promo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300;500;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Monks News promo: a news-opener in navy, world map and red-orange, driven by render(t). 1920x1080. */
+:root { --navy:#1F2B45; --navy-hi:#34425F; --navy-lo:#121A2C; --red:#EB464A; --paper:#F2EFE9; --ink:#0E0F12; --display:'Jost', 'Futura', 'Century Gothic', sans-serif; --mono:'IBM Plex Mono', ui-monospace, monospace; }
+html, body { margin:0; background:#000; }
+#stage { position:relative; width:1920px; height:1080px; overflow:hidden; background:var(--navy); color:var(--paper); font-family:var(--display); }
+#stage * { box-sizing:border-box; }
+.L { position:absolute; inset:0; overflow:hidden; }
+.abs { position:absolute; }
+.img { position:absolute; inset:0; background-size:cover; background-position:center; }
+.field { background:radial-gradient(70% 80% at 50% 45%, var(--navy-hi), var(--navy) 60%, var(--navy-lo)); }
+.map { position:absolute; left:-80px; top:-60px; width:2080px; height:1170px; background:url(assets/worldmap.webp) center/cover no-repeat; opacity:.75; }
+.dots { position:absolute; height:6px; background:radial-gradient(circle, rgba(220,228,245,.75) 1.6px, transparent 2px) 0 0/16px 6px repeat-x; }
+.plus { position:absolute; width:46px; height:46px; transform:translate(-50%,-50%); }
+.plus::before, .plus::after { content:''; position:absolute; background:var(--red); }
+.plus::before { left:16px; top:0; width:14px; height:46px; } .plus::after { left:0; top:16px; width:46px; height:14px; }
+.plus.w::before, .plus.w::after { background:var(--paper); }
+.plus.s { width:22px; height:22px; } .plus.s::before { left:9px; width:4px; height:22px; } .plus.s::after { top:9px; width:22px; height:4px; }
+.big { font-family:var(--display); font-weight:500; text-transform:uppercase; letter-spacing:.01em; line-height:1; white-space:nowrap; }
+.kick { font-family:var(--display); font-weight:500; text-transform:uppercase; letter-spacing:.42em; font-size:26px; white-space:nowrap; }
+.mono { font-family:var(--mono); font-weight:500; text-transform:uppercase; letter-spacing:.16em; }
+.tile { position:absolute; overflow:hidden; background:var(--navy-lo); }
+.tile > .img { inset:-4%; }
+.label { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:var(--red); }
+.grain { position:absolute; inset:-200px; pointer-events:none; opacity:.10; mix-blend-mode:overlay;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E"); }
+.vig { position:absolute; inset:0; pointer-events:none; background:radial-gradient(95% 90% at 50% 50%, transparent 55%, rgba(5,8,16,.45)); }
+.slice { position:absolute; inset:0; }
+.disc { position:absolute; left:0; top:0; border-radius:50%; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script>
+const W = 1920, H = 1080;
+const clamp01 = (x) => Math.max(0, Math.min(1, x));
+const seg = (t, a, b) => clamp01((t - a) / (b - a));
+const lerp = (a, b, p) => a + (b - a) * p;
+const eo = (x) => 1 - Math.pow(1 - x, 3), ei = (x) => x * x * x;
+const eio = (x) => (x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const eox = (x) => (x >= 1 ? 1 : 1 - Math.pow(2, -10 * x)), eix = (x) => (x <= 0 ? 0 : Math.pow(2, 10 * x - 10));
+const eob = (x, s = 1.7) => 1 + (s + 1) * Math.pow(x - 1, 3) + s * Math.pow(x - 1, 2);
+const A = (n) => 'assets/' + n;
+const $ = (h) => { const d = document.createElement('div'); d.innerHTML = h.trim(); return d.firstChild; };
+const stage = document.getElementById('stage');
+const add = (h, parent = stage) => parent.appendChild($(h));
+const hash = (i) => { const s = Math.sin(i * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+
+// ---------- shared pieces ----------
+function field(extra = '') {
+  return `<div class="L field"><div class="map"></div>
+    <div class="dots" style="left:920px;top:250px;width:1000px"></div><div class="dots" style="left:0;top:830px;width:640px"></div><div class="dots" style="left:0;top:848px;width:640px"></div>
+    <div class="dots" style="left:470px;top:440px;width:330px;opacity:.5"></div>${extra}</div>`;
+}
+function tile(x, y, w, h, img, label, size, navy) {
+  return `<div class="tile" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px">${img ? `<div class="img" style="background-image:url(${A(img)})"></div>` : ''}${label ? `<div class="label" style="${navy ? 'background:radial-gradient(70% 80% at 50% 45%, var(--navy-hi), var(--navy) 60%, var(--navy-lo))' : ''}"><span class="big" style="font-size:${size || 64}px">${label}</span></div>` : ''}</div>`;
+}
+// a mosaic of three rows; each row is a long strip of tiles that drifts
+function mosaic(rows) {
+  const el = add(`<div class="L" style="background:var(--navy-lo)"></div>`);
+  const strips = rows.map((row, r) => {
+    const s = add(`<div class="abs" style="left:0;top:${r * 360}px;width:${row.length * 640}px;height:360px"></div>`, el);
+    row.forEach((c, i) => add(tile(i * 640 + 3, 3, 634, 354, c.img, c.label, c.size, c.navy), s));
+    return s;
+  });
+  return { el, strips };
+}
+// horizontal slice glitch on any element: copies of it, each clipped to a band, nudged sideways on glitch frames
+function glitchable(host, inner, bands) {
+  const base = add(`<div class="slice">${inner}</div>`, host);
+  const sl = bands.map(([a, b]) => add(`<div class="slice" style="clip-path:inset(${a}% 0 ${100 - b}% 0);opacity:0">${inner}</div>`, host));
+  return (t, times) => {
+    let on = -1;
+    times.forEach((g, k) => { if (t >= g && t < g + 0.1) on = k; });
+    sl.forEach((s, i) => {
+      if (on < 0) { s.style.opacity = 0; return; }
+      const f = Math.floor((t - times[on]) * 30);
+      const dx = (hash(on * 13 + i * 7 + f) - .5) * 70;
+      s.style.opacity = 1; s.style.transform = `translateX(${dx.toFixed(1)}px)`;
+    });
+    base.style.clipPath = on >= 0 ? `inset(0 0 0 0)` : '';
+  };
+}
+
+// ---------- 1. mosaic one, zoom into TODAY (0 to 1.6) ----------
+const M1 = mosaic([
+  [{ img: 'n-hero.webp' }, { img: 'n-s2.webp' }, { label: 'Design', size: 58 }, { img: 'n-cover.webp' }, { img: 'n-good.webp' }, { img: 'n-cards.webp' }],
+  [{ img: 'n-issue.webp' }, { img: 'n-lead.webp' }, { label: 'Today', size: 69, navy: true }, { img: 'n-art.webp' }, { img: 'n-s4.webp' }, { img: 'n-cards2.webp' }],
+  [{ img: 'n-s4.webp' }, { label: 'Dev', size: 58 }, { img: 'n-hero.webp' }, { img: 'n-cards.webp' }, { label: 'Design', size: 58 }, { img: 'n-issue.webp' }],
+]);
+const M1plus = [[760, 90], [1290, 540], [420, 820], [1630, 960]].map(([x, y]) => add(`<i class="plus s w" style="left:${x}px;top:${y}px"></i>`, M1.el));
+
+// ---------- 2. TODAY card (1.6 to 2.7), white disc, red ring, iris (2.7 to 3.4) ----------
+const S2 = add(`<div class="L">${field()}</div>`);
+const S2plus = [[1760, 70], [244, 1046], [1450, 300]].map(([x, y], i) => add(`<i class="plus ${i === 2 ? 's w' : ''}" style="left:${x}px;top:${y}px"></i>`, S2));
+const S2kick = add(`<div class="abs kick" style="left:0;right:0;top:372px;text-align:center;opacity:.85">Monks News &middot; Friday 27 November</div>`, S2);
+const S2word = add(`<div class="abs" style="left:0;top:420px;width:1920px;height:240px"></div>`, S2);
+const S2g = glitchable(S2word, `<div class="big" style="text-align:center;font-size:210px;line-height:240px">Today</div>`, [[18, 34], [52, 61], [74, 88]]);
+const S2white = add(`<div class="disc" style="background:var(--paper)"></div>`, S2);
+const S2red = add(`<div class="disc" style="background:var(--red)"></div>`, S2);
+const S2iris = add(`<div class="L" style="clip-path:circle(0px at 960px 540px)"><div class="img" style="background-image:url(${A('r-s2.webp')})"></div></div>`, S2);
+
+// ---------- 3. hold on the paper, then the red panel retreats off a navy screen with a label grid (3.4 to 5.1) ----------
+const S3 = add(`<div class="L"><div class="img s3-hold" style="background-image:url(${A('r-s2.webp')})"></div></div>`);
+const S3hold = S3.querySelector('.s3-hold');
+const S4 = add(`<div class="L"><div class="img s4-img" style="background-image:url(${A('n-cards.webp')})"></div></div>`);
+const S4img = S4.querySelector('.s4-img');
+let grid = '';
+for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) grid += `<span class="abs" style="left:${110 + c * 470}px;top:${150 + r * 230}px;font-family:var(--display);font-size:24px;letter-spacing:.06em;white-space:nowrap"><b style="font-weight:300">MONKS</b> <b style="font-weight:700;color:${(r + c) % 3 ? 'var(--paper)' : 'var(--red)'}">NEWS</b></span>`;
+const S4grid = add(`<div class="L">${grid}</div>`, S4);
+const S4bar = add(`<div class="abs" style="right:0;top:0;bottom:0;background:var(--red)"></div>`, S4);
+const S4blocks = [[0, 120, 760, 190, 'var(--paper)', -1], [0, 330, 520, 120, 'var(--red)', -1], [1920, 90, 640, 170, 'var(--red)', 1], [1920, 700, 900, 230, 'var(--paper)', 1], [0, 500, 1200, 200, 'var(--red)', -1], [1920, 420, 700, 150, 'var(--paper)', 1]]
+  .map(([x, y, w, h, c, d]) => ({ el: add(`<div class="abs" style="left:${d < 0 ? 0 : 1920 - w}px;top:${y}px;width:${w}px;height:${h}px;background:${c}"></div>`, S4), w, d }));
+
+// ---------- 4. title over the paper spread, red dot to ring to iris (5.4 to 6.8) ----------
+const S5 = add(`<div class="L"><div class="img s5-img" style="background-image:url(${A('n-s4.webp')})"></div>
+  <div class="abs" style="left:0;right:0;bottom:0;height:420px;background:linear-gradient(transparent, rgba(14,20,34,.85))"></div></div>`);
+const S5img = S5.querySelector('.s5-img');
+const S5bars = [[0, 1050, 700, 14], [700, 1036, 520, 28], [1220, 1022, 700, 42]].map(([x, y, w, h]) => add(`<div class="abs" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px;background:var(--red)"></div>`, S5));
+const S5ghost = add(`<div class="abs big" style="left:150px;top:720px;font-size:190px;opacity:0"><b style="font-weight:700;color:var(--red)">Design</b> <b style="font-weight:300">&amp; Dev</b></div>`, S5);
+const S5title = add(`<div class="abs big" style="left:150px;top:560px;font-size:190px"><b style="font-weight:700;color:var(--red)">Design</b> <b style="font-weight:300">&amp; Dev</b></div>`, S5);
+const S5k = add(`<div class="abs mono" style="left:156px;top:500px;font-size:22px">The last 24 hours, worldwide</div>`, S5);
+const S5red = add(`<div class="disc" style="background:var(--red)"></div>`, S5);
+const S5white = add(`<div class="disc" style="background:var(--paper)"></div>`, S5);
+const S5iris = add(`<div class="L" style="clip-path:circle(0px at 1000px 540px)"><div class="img" style="background-image:url(${A('r-issue.webp')})"></div></div>`, S5);
+
+// ---------- 5. rapid cuts (6.8 to 8.4) ----------
+const CUTS = [[6.8, 'r-issue.webp', '50% 20%'], [7.2, 'n-hero.webp', '30% 40%'], [7.5, 'n-good.webp', '50% 50%'], [7.8, 'n-lead.webp', '50% 20%'], [8.1, 'n-cards.webp', '50% 30%']];
+const S6 = add(`<div class="L" style="background:#000"></div>`);
+const S6shots = CUTS.map(([t0, img, pos]) => {
+  const el = add(`<div class="L"></div>`, S6);
+  const g = glitchable(el, `<div class="img" style="background-image:url(${A(img)});background-position:${pos}"></div>`, [[10, 22], [40, 47], [63, 80]]);
+  return { el, g, t0 };
+});
+const S6tint = add(`<div class="L" style="background:linear-gradient(90deg, transparent 62%, rgba(235,70,74,.75));mix-blend-mode:screen"></div>`, S6);
+const S6lab = add(`<div class="abs mono" style="left:60px;bottom:50px;font-size:22px;padding:8px 14px;background:var(--red)">monks-news.vercel.app</div>`, S6);
+
+// ---------- 6. mosaic two, zoom into DM Bytes (8.4 to 10.7) ----------
+const M2 = mosaic([
+  [{ img: 'n-good.webp' }, { img: 'n-cards2.webp' }, { label: 'Tools', size: 58 }, { img: 'n-s2.webp' }, { img: 'n-hero.webp' }, { img: 'n-lead.webp' }],
+  [{ img: 'n-art.webp' }, { img: 'n-issue.webp' }, { img: 'n-cover.webp' }, { img: 'n-cards.webp' }, { img: 'n-good.webp' }, { img: 'n-s4.webp' }],
+  [{ img: 'n-cards.webp' }, { img: 'n-s2.webp' }, { label: 'AI', size: 64 }, { img: 'n-lead.webp' }, { img: 'n-hero.webp' }, { label: 'Branding', size: 54 }],
+]);
+const M2plus = [[880, 410], [1500, 120], [300, 700]].map(([x, y]) => add(`<i class="plus s w" style="left:${x}px;top:${y}px"></i>`, M2.el));
+const S7 = add(`<div class="L"><div class="img s7-img" style="background-image:url(${A('n-cover.webp')});background-position:50% 35%;filter:brightness(.45) blur(2px)"></div><div class="L" style="background:radial-gradient(45% 40% at 50% 50%, rgba(10,15,30,.85), transparent)"></div>
+  <div class="abs kick" style="left:0;right:0;top:420px;text-align:center;font-size:24px">The paper edition</div>
+  <div class="abs big" style="left:0;right:0;top:458px;text-align:center;font-size:170px">DM Bytes</div>
+  <div class="L s7-over" style="opacity:0">${field()}</div></div>`);
+const S7img = S7.querySelector('.s7-img'), S7over = S7.querySelector('.s7-over');
+
+// ---------- 7. end card (10.7 to 15) ----------
+const RINGS = [180, 300, 450].map((r) => `<div class="abs" style="left:${960 - r}px;top:${560 - r}px;width:${2 * r}px;height:${2 * r}px;border-radius:50%;border:2px solid rgba(220,228,245,.12)"></div>`).join('');
+const S8 = add(`<div class="L">${field(RINGS + '<div class="abs" style="left:330px;top:548px;width:230px;height:3px;background:rgba(220,228,245,.25)"></div><div class="abs" style="left:330px;top:560px;width:150px;height:3px;background:rgba(220,228,245,.18)"></div>')}</div>`);
+const S8plus = [[1340, 640], [380, 820], [1650, 380], [560, 260], [1480, 900], [240, 470]].map(([x, y], i) => add(`<i class="plus s w" style="left:${x}px;top:${y}px"></i>`, S8));
+const S8kick = add(`<div class="abs kick" style="left:0;right:0;top:432px;text-align:center;font-size:30px">Every morning</div>`, S8);
+const S8word = add(`<div class="abs" style="left:0;top:470px;width:1920px;height:190px"></div>`, S8);
+const S8g = glitchable(S8word, `<div class="big" style="text-align:center;font-size:178px;line-height:190px">Monks News</div>`, [[8, 26], [44, 58], [70, 90]]);
+const S8logo = add(`<svg class="abs" viewBox="0 0 32 32" style="left:916px;top:316px;width:88px;height:88px"><rect width="32" height="32" rx="8" fill="#7D40FF"/><path transform="translate(16 16.4) scale(0.92) translate(-12.5 -11.8)" fill="#FFFFFF" d="M21.5382 7.90748C21.0683 6.79432 20.378 5.78426 19.5102 4.93458C18.6425 4.08491 17.609 3.40708 16.4722 2.94692C15.3373 2.48676 14.1204 2.25 12.89 2.25H11.7512C9.3644 2.25 7.0751 3.17796 5.3864 4.83148C3.6977 6.485 2.75 8.7247 2.75 11.0618V20.412C2.75 20.6583 2.8514 20.8951 3.02885 21.0707C3.20825 21.2445 3.45005 21.3438 3.7016 21.3438H13.2507C14.4324 21.3438 15.6024 21.1146 16.6944 20.6717C17.7864 20.2287 18.779 19.5814 19.6155 18.7623C20.4501 17.9432 21.1131 16.9732 21.5655 15.904C22.0179 14.8347 22.25 13.6872 22.25 12.5301V11.415C22.25 10.2102 22.0082 9.01874 21.5382 7.90748ZM17.3418 14.1263C15.9534 15.3178 14.2842 15.946 12.5136 15.946C10.743 15.946 9.0719 15.3178 7.68545 14.1263C7.3598 13.8495 7.3286 13.3664 7.61135 13.0494C7.89605 12.7306 8.38745 12.7 8.7131 12.9769C9.81095 13.9201 11.1252 14.4185 12.5136 14.4185C13.902 14.4185 15.2144 13.9201 16.3142 12.9769C16.6379 12.7 17.1312 12.7325 17.414 13.0494C17.6987 13.3664 17.6655 13.8495 17.3418 14.1263Z"/></svg>`, S8);
+const S8url = add(`<div class="abs mono" style="left:0;right:0;top:700px;text-align:center;font-size:26px">monks-news.vercel.app</div>`, S8);
+
+const VIG = add(`<div class="vig"></div>`), GRAIN = add(`<div class="grain"></div>`);
+const SCENES = [M1.el, S2, S3, S4, S5, S6, M2.el, S7, S8];
+const show = (el) => SCENES.forEach((s) => { s.style.display = s === el ? '' : 'none'; });
+const disc = (el, cx, cy, r) => { el.style.width = el.style.height = (2 * r) + 'px'; el.style.transform = `translate(${(cx - r).toFixed(1)}px,${(cy - r).toFixed(1)}px)`; el.style.display = r > 0.5 ? '' : 'none'; };
+
+// a row of the mosaic: offset so a chosen tile is centred at time tc, drifting at v px/s
+const rowX = (tileIndex, tc, v, t) => (960 - (tileIndex * 640 + 320)) + v * (t - tc);
+
+window.DURATION = 15;
+window.render = function (t) {
+  const f = Math.floor(t * 30);
+  GRAIN.style.transform = `translate(${(hash(f) * 180 - 90).toFixed(0)}px,${(hash(f + 7) * 180 - 90).toFixed(0)}px)`;
+  if (t < 1.6) { // 1. mosaic, then whip-zoom into TODAY
+    show(M1.el);
+    M1.strips[0].style.transform = `translateX(${rowX(2, 1.45, -560, t).toFixed(1)}px)`;
+    M1.strips[1].style.transform = `translateX(${rowX(2, 1.45, 560, t).toFixed(1)}px)`;
+    M1.strips[2].style.transform = `translateX(${rowX(2, 1.45, -560, t).toFixed(1)}px)`;
+    const z = eio(seg(t, 1.25, 1.58));
+    M1.el.style.transformOrigin = '960px 540px';
+    M1.el.style.transform = `scale(${lerp(1, 3.06, z).toFixed(4)})`;
+    M1.el.style.filter = z > 0.02 && z < 0.98 ? `blur(${(Math.sin(z * Math.PI) * 6).toFixed(2)}px)` : 'none';
+    M1plus.forEach((p, i) => { p.style.opacity = (0.5 + 0.5 * Math.sin(t * 9 + i * 2)).toFixed(2); });
+  } else if (t < 3.4) { // 2. TODAY, glitch, white disc, red ring, iris
+    show(S2);
+    const lt = t - 1.6;
+    S2.querySelector('.field').style.transform = `scale(${lerp(1.0, 1.045, lt / 1.8).toFixed(4)})`;
+    S2word.style.transform = `scale(${lerp(1.0, 1.04, seg(t, 1.6, 2.7)).toFixed(4)})`;
+    S2kick.style.opacity = (0.85 * eo(seg(t, 1.75, 2.05))).toFixed(3);
+    S2g(t, [2.42, 2.58]);
+    S2plus.forEach((p, i) => { p.style.opacity = (i === 2 ? (hash(f + i) > .5 ? 1 : .3) : 1); });
+    const pop = eob(seg(t, 2.66, 2.73)), grow = eo(seg(t, 2.73, 2.86));
+    disc(S2white, 960, 540, t < 2.66 ? 0 : lerp(110 * pop, 1250, grow));
+    const red = eo(seg(t, 2.9, 3.04)), open = eio(seg(t, 3.10, 3.40));
+    disc(S2red, 960, 540, t < 2.9 ? 0 : (t < 3.1 ? lerp(0, 300, red) : lerp(300, 1320, eio(seg(t, 3.1, 3.4))) + 70 * (1 - seg(t, 3.3, 3.4))));
+    const ir = t < 3.10 ? 0 : lerp(20, 1260, eio(seg(t, 3.1, 3.4)));
+    S2iris.style.clipPath = `circle(${ir.toFixed(1)}px at 960px 540px)`;
+  } else if (t < 4.05) { // 3. hold on the red paper spread
+    show(S3);
+    S3hold.style.transform = `scale(${lerp(1.0, 1.035, seg(t, 3.4, 4.05)).toFixed(4)}) translateX(${(-14 * (t - 3.4)).toFixed(1)}px)`;
+  } else if (t < 5.4) { // 4. red panel retreats off the navy screen; label grid; blocks
+    show(S4);
+    S4img.style.transform = `scale(1.06) translateX(${(-18 * (t - 4.05)).toFixed(1)}px)`;
+    S4bar.style.width = (lerp(1920, 72, eo(seg(t, 4.04, 4.75)))).toFixed(1) + 'px';
+    S4grid.style.opacity = eo(seg(t, 4.2, 4.6));
+    S4blocks.forEach((b, i) => {
+      const p = eox(seg(t, 4.92 + i * 0.06, 5.2 + i * 0.06));
+      b.el.style.transform = `translateX(${(b.d < 0 ? lerp(-b.w - 40, 0, p) : lerp(b.w + 40, 0, p)).toFixed(1)}px)`;
+    });
+  } else if (t < 6.8) { // 5. title over the paper; red dot to ring to iris
+    show(S5);
+    S5img.style.transform = `scale(${lerp(1.08, 1.03, seg(t, 5.4, 6.8)).toFixed(4)})`;
+    const tin = eio(seg(t, 5.42, 5.8));
+    S5title.style.transform = `translateX(${lerp(-1300, 0, tin).toFixed(1)}px)`;
+    S5ghost.style.transform = `translateX(${lerp(-1500, 0, eio(seg(t, 5.5, 5.92))).toFixed(1)}px)`;
+    S5ghost.style.opacity = (0.75 * (1 - seg(t, 5.85, 5.98))).toFixed(3);
+    S5k.style.opacity = eo(seg(t, 5.65, 5.95));
+    S5bars.forEach((b, i) => { b.style.transform = `translateX(${lerp(-1920, 0, eox(seg(t, 5.4 + i * 0.06, 5.8 + i * 0.06))).toFixed(1)}px)`; });
+    const cx = lerp(770, 1000, eio(seg(t, 6.12, 6.26))), cy = lerp(660, 540, eio(seg(t, 6.12, 6.26)));
+    const rr = t < 6.1 ? 0 : t < 6.12 ? 26 * eob(seg(t, 6.1, 6.12)) : lerp(26, 420, ei(seg(t, 6.12, 6.24)));
+    disc(S5red, cx, cy, t > 6.36 ? lerp(420, 1500, eio(seg(t, 6.36, 6.8))) : rr);
+    const wr = t < 6.24 ? 0 : t < 6.36 ? lerp(0, 250, eo(seg(t, 6.24, 6.36))) : lerp(250, 1380, eio(seg(t, 6.38, 6.8)));
+    disc(S5white, 1000, 540, wr);
+    const ir = t < 6.4 ? 0 : lerp(0, 1260, eio(seg(t, 6.42, 6.8)));
+    S5iris.style.clipPath = `circle(${ir.toFixed(1)}px at 1000px 540px)`;
+  } else if (t < 8.4) { // 6. rapid cuts with slice glitch on each cut
+    show(S6);
+    let k = 0; CUTS.forEach((c, i) => { if (t >= c[0]) k = i; });
+    S6shots.forEach((s, i) => {
+      s.el.style.display = i === k ? '' : 'none';
+      if (i === k) { s.el.style.transform = `scale(${lerp(1.12, 1.04, eo(seg(t, s.t0, s.t0 + 0.4))).toFixed(4)})`; s.g(t, i ? [s.t0] : []); }
+    });
+    S6tint.style.opacity = (t < 7.2 ? 0 : 0.35 + 0.65 * seg(t, 7.6, 8.1)).toFixed(3);
+    S6lab.style.opacity = t > 7.5 ? 1 : 0;
+  } else if (t < 10.05) { // 7. mosaic two, whip-zoom into the DM Bytes tile
+    show(M2.el);
+    M2.strips[0].style.transform = `translateX(${rowX(2, 9.9, -520, t).toFixed(1)}px)`;
+    M2.strips[1].style.transform = `translateX(${rowX(2, 9.9, 560, t).toFixed(1)}px)`;
+    M2.strips[2].style.transform = `translateX(${rowX(2, 9.9, -520, t).toFixed(1)}px)`;
+    const z = eio(seg(t, 9.68, 10.02));
+    M2.el.style.transformOrigin = '960px 540px';
+    M2.el.style.transform = `scale(${lerp(1, 3.06, z).toFixed(4)})`;
+    M2.el.style.filter = z > 0.02 && z < 0.98 ? `blur(${(Math.sin(z * Math.PI) * 6).toFixed(2)}px)` : 'none';
+    M2plus.forEach((p, i) => { p.style.opacity = (0.5 + 0.5 * Math.sin(t * 8 + i)).toFixed(2); });
+  } else if (t < 10.7) { // 8. DM Bytes, navy floods in
+    show(S7);
+    S7img.style.transform = `scale(${lerp(1.0, 1.05, seg(t, 10.05, 10.7)).toFixed(4)})`;
+    S7over.style.opacity = seg(t, 10.2, 10.65).toFixed(3);
+  } else { // 9. end card
+    show(S8);
+    S8.querySelector('.field').style.transform = `scale(${lerp(1.0, 1.05, seg(t, 10.7, 15)).toFixed(4)})`;
+    S8word.style.transform = `scale(${lerp(1.0, 1.035, seg(t, 10.7, 15)).toFixed(4)})`;
+    S8g(t, [12.5, 13.1]);
+    S8kick.style.opacity = '1';
+    S8logo.style.transform = `scale(${Math.max(0, eob(seg(t, 11.0, 11.35))).toFixed(3)})`;
+    S8url.style.opacity = eo(seg(t, 11.3, 11.7)).toFixed(3);
+    S8plus.forEach((p, i) => { p.style.opacity = (0.25 + 0.75 * (hash(Math.floor(t * 6) + i * 31) > 0.55 ? 1 : 0)).toFixed(2); });
+  }
+};
+window.ready = Promise.all([document.fonts.ready, ...['n-hero.webp', 'worldmap.webp', 'r-s2.webp', 'n-cover.webp'].map((n) => new Promise((r) => { const i = new Image(); i.onload = i.onerror = r; i.src = A(n); }))]);
+window.render(0);
+</script>
+</body>
+</html>

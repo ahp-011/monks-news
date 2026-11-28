@@ -59,7 +59,7 @@ const title = `DM Bytes · ${p.no}, ${p.longDate}`;
         setTimeout(function () { render(); }, 960);
       }
     }
-    // ---- page-turn sound: synthesised paper (crinkle as it lifts, swish as it turns, flap as it lands) ----
+    // ---- page-turn sound: synthesised paper (crinkle as it lifts, swish as it turns) ----
     var ac = null, noise = null, turns = 0, soundOn = true;
     try { soundOn = localStorage.getItem('dmb-sound') !== 'off'; } catch (e) {}
     var sndBtn = document.getElementById('snd');
@@ -101,13 +101,6 @@ const title = `DM Bytes · ${p.no}, ${p.longDate}`;
       sw.bp.frequency.setValueAtTime(700, t0 + 0.05); sw.bp.frequency.exponentialRampToValueAtTime(2600 + rnd(k) * 900, t0 + 0.3); sw.bp.frequency.exponentialRampToValueAtTime(1100, t0 + 0.7);
       // crinkle running through the swish
       for (var j = 0; j < 10; j++) burst(t0 + 0.12 + j * 0.045 + rnd(k * 11 + j) * 0.03, 0.03, 3500 + rnd(k * 13 + j) * 3500, 2, 0.035 + rnd(j + k) * 0.035, side * (0.4 - j * 0.08), 0.002);
-      // 3. the page lands: a soft papery flap with a little body
-      var land = t0 + 0.78;
-      burst(land, 0.16, 420, 0.7, 0.32, -side * 0.3, 0.006);
-      burst(land + 0.008, 0.09, 1800, 1, 0.12, -side * 0.3, 0.003);
-      var o = ac.createOscillator(), og = ac.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(130, land); o.frequency.exponentialRampToValueAtTime(70, land + 0.12);
-      og.gain.setValueAtTime(0.0001, land); og.gain.exponentialRampToValueAtTime(0.12, land + 0.008); og.gain.exponentialRampToValueAtTime(0.0001, land + 0.14);
-      o.connect(og); og.connect(out); o.start(land); o.stop(land + 0.2);
     }
     function go(d) { var t = Math.max(0, Math.min(n, s + d)); if (t === s) return; var m = d > 0 ? s : t; s = t; flipSound(d); render(m); }
     prev.addEventListener('click', function () { go(-1); });

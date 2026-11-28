@@ -31,6 +31,6 @@ It runs by itself in **GitHub Actions** (`.github/workflows/daily.yml`). Nobody 
 ## Running or fixing by hand
 
 - Run now: GitHub → Actions → Daily issue → Run workflow.
-- Re-make today's issue: delete `src/content/issues/<today>.json` on `main`, then run the workflow.
+- Re-make today's issue: GitHub → Actions → Daily issue → Run workflow, tick **Rewrite today's issue**.
 - Add or remove a source: edit `scripts/daily/sources.mjs`.
 - Run locally: `GEMINI_API_KEY=... node scripts/daily/publish.mjs`.

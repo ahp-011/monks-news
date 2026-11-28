@@ -31,6 +31,7 @@ const title = `DM Bytes · ${p.no}, ${p.longDate}`;
     <div class="dots" id="dots" aria-hidden="true"></div>
     <span class="hint" id="hint" aria-live="polite">Cover</span>
     <button type="button" id="next" aria-label="Next page">→</button>
+    <button type="button" id="snd" class="snd" aria-label="Turn page sound off" aria-pressed="true">♪</button>
   </nav>
   <script is:inline>
   (function () {
@@ -58,7 +59,57 @@ const title = `DM Bytes · ${p.no}, ${p.longDate}`;
         setTimeout(function () { render(); }, 960);
       }
     }
-    function go(d) { var t = Math.max(0, Math.min(n, s + d)); if (t === s) return; var m = d > 0 ? s : t; s = t; render(m); }
+    // ---- page-turn sound: synthesised paper (crinkle as it lifts, swish as it turns, flap as it lands) ----
+    var ac = null, noise = null, turns = 0, soundOn = true;
+    try { soundOn = localStorage.getItem('dmb-sound') !== 'off'; } catch (e) {}
+    var sndBtn = document.getElementById('snd');
+    function syncSnd() { sndBtn.setAttribute('aria-pressed', String(soundOn)); sndBtn.setAttribute('aria-label', soundOn ? 'Turn page sound off' : 'Turn page sound on'); sndBtn.classList.toggle('off', !soundOn); }
+    syncSnd();
+    sndBtn.addEventListener('click', function () { soundOn = !soundOn; try { localStorage.setItem('dmb-sound', soundOn ? 'on' : 'off'); } catch (e) {} syncSnd(); if (soundOn) flipSound(1); });
+    function rnd(seed) { var x = Math.sin(seed * 9301 + 49297) * 233280; return x - Math.floor(x); }
+    function audio() {
+      if (!ac) {
+        var AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null;
+        ac = new AC();
+        noise = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate);
+        var d = noise.getChannelData(0), b0 = 0, b1 = 0;
+        for (var i = 0; i < d.length; i++) { var w = Math.random() * 2 - 1; b0 = 0.97 * b0 + 0.03 * w; b1 = 0.6 * b1 + 0.4 * w; d[i] = (w * 0.55 + b1 * 0.35 + b0 * 0.6); } // mix of white and softer noise: paper fibre
+      }
+      if (ac.state === 'suspended') ac.resume();
+      return ac;
+    }
+    function burst(t, dur, f, q, gain, pan, attack) {
+      var src = ac.createBufferSource(); src.buffer = noise;
+      var bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = f; bp.Q.value = q;
+      var g = ac.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(gain, t + (attack || 0.004)); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      var p = ac.createStereoPanner ? ac.createStereoPanner() : null;
+      src.connect(bp); bp.connect(g); if (p) { p.pan.value = pan; g.connect(p); p.connect(out); } else g.connect(out);
+      src.start(t, Math.random() * 1.5, dur + 0.05);
+      return { bp: bp, g: g };
+    }
+    var out = null;
+    function flipSound(dir) {
+      if (!soundOn || !audio()) return;
+      if (!out) { out = ac.createGain(); out.gain.value = 0.9; var comp = ac.createDynamicsCompressor(); out.connect(comp); comp.connect(ac.destination); }
+      var t0 = ac.currentTime + 0.01, k = ++turns, side = dir > 0 ? 1 : -1;
+      // 1. the corner lifts: a few dry crackles
+      for (var i = 0; i < 7; i++) burst(t0 + i * 0.018 + rnd(k * 7 + i) * 0.02, 0.025 + rnd(k + i) * 0.03, 2800 + rnd(k * 3 + i) * 3200, 1.6, 0.09 + rnd(k + i * 5) * 0.08, side * 0.5, 0.002);
+      // 2. the page sweeps over: an airy swish that rises then falls, travelling across the stereo field
+      var sw = burst(t0 + 0.05, 0.62, 900, 0.8, 0.0001, side * 0.4, 0.01);
+      sw.g.gain.cancelScheduledValues(t0); sw.g.gain.setValueAtTime(0.0001, t0 + 0.05);
+      sw.g.gain.exponentialRampToValueAtTime(0.28, t0 + 0.32); sw.g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.72);
+      sw.bp.frequency.setValueAtTime(700, t0 + 0.05); sw.bp.frequency.exponentialRampToValueAtTime(2600 + rnd(k) * 900, t0 + 0.3); sw.bp.frequency.exponentialRampToValueAtTime(1100, t0 + 0.7);
+      // crinkle running through the swish
+      for (var j = 0; j < 10; j++) burst(t0 + 0.12 + j * 0.045 + rnd(k * 11 + j) * 0.03, 0.03, 3500 + rnd(k * 13 + j) * 3500, 2, 0.035 + rnd(j + k) * 0.035, side * (0.4 - j * 0.08), 0.002);
+      // 3. the page lands: a soft papery flap with a little body
+      var land = t0 + 0.78;
+      burst(land, 0.16, 420, 0.7, 0.32, -side * 0.3, 0.006);
+      burst(land + 0.008, 0.09, 1800, 1, 0.12, -side * 0.3, 0.003);
+      var o = ac.createOscillator(), og = ac.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(130, land); o.frequency.exponentialRampToValueAtTime(70, land + 0.12);
+      og.gain.setValueAtTime(0.0001, land); og.gain.exponentialRampToValueAtTime(0.12, land + 0.008); og.gain.exponentialRampToValueAtTime(0.0001, land + 0.14);
+      o.connect(og); og.connect(out); o.start(land); o.stop(land + 0.2);
+    }
+    function go(d) { var t = Math.max(0, Math.min(n, s + d)); if (t === s) return; var m = d > 0 ? s : t; s = t; flipSound(d); render(m); }
     prev.addEventListener('click', function () { go(-1); });
     next.addEventListener('click', function () { go(1); });
     leaves.forEach(function (l, k) { l.addEventListener('click', function (e) { if (e.target.closest('a') || phone()) return; go(k < s ? -1 : 1); }); });

@@ -9,7 +9,12 @@ on:
     - cron: '7 0 * * *'
     - cron: '13 1 * * *'
     - cron: '7 2 * * *'
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Rewrite today\'s issue even if it is already published'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -37,6 +42,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FORCE: ${{ inputs.force && '1' || '' }}
         run: node scripts/daily/publish.mjs
 
       - name: Check the site builds

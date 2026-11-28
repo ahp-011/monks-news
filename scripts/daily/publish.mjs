@@ -10,7 +10,7 @@
 import { readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { XMLParser } from 'fast-xml-parser';
-import { FEEDS, RELEVANT, OFFTOPIC } from './sources.mjs';
+import { FEEDS, RELEVANT, OFFTOPIC, NOISY_SOURCES } from './sources.mjs';
 
 const ROOT = new URL('../../', import.meta.url);
 const ISSUES = new URL('src/content/issues/', ROOT);
@@ -65,13 +65,14 @@ async function collect(windowH) {
   const since = now - windowH * H;
   const out = [];
   const JUNK = /\b(deals?|discount|% off|\$\d+ off|best price|black friday|cyber monday|prime day|on sale|sale price|coupon|giveaway|sponsored)\b/i;
-  const add = (c, min = since) => { if (c.title && !JUNK.test(c.title) && !OFFTOPIC.test(`${c.title} ${c.desc ?? ''}`) && /^https?:\/\//.test(c.url) && c.date > min && c.date <= now + H) out.push(c); };
+  const latin = (x) => (x.match(/[A-Za-z]/g) || []).length >= 0.6 * (x.replace(/[\s\d\p{P}\p{S}]/gu, '').length || 1);
+  const add = (c, min = since) => { if (c.title && !JUNK.test(c.title) && latin(c.title) && !NOISY_SOURCES.test(c.source || '') && /\$[A-Z]{2,5}\b/.test(c.title) === false && !OFFTOPIC.test(`${c.title} ${c.desc ?? ''}`) && /^https?:\/\//.test(c.url) && c.date > min && c.date <= now + H) out.push(c); };
 
   const feeds = await Promise.allSettled(FEEDS.map(async (f) => {
     const items = feedItems(xml.parse(await get(f.url)));
     const min = f.section === 'learning' ? now - 6 * 24 * H : since;
     const fresh = f.trending ? items : items.filter((i) => i.date > min);
-    for (const i of fresh.slice(0, f.limit ?? 12)) {
+    for (const i of fresh.filter((x) => !f.filter || RELEVANT.test(`${x.title} ${x.desc}`)).slice(0, f.limit ?? 12)) {
       const c = { ...i, desc: cut(i.desc, 420), source: f.name, section: f.section, team: f.team, kind: f.kind ?? 'news', official: !!f.official };
       if (f.google) { // "Headline - Publisher": keep the publisher as the source
         const m = c.title.match(/^(.*) - ([^-]{2,60})$/);
@@ -88,7 +89,7 @@ async function collect(windowH) {
   try {
     const q = `https://hn.algolia.com/api/v1/search?tags=story&numericFilters=created_at_i>${Math.floor(since / 1000)},points>60&hitsPerPage=100`;
     const { hits } = await get(q, { json: true });
-    for (const h of hits) {
+    for (const h of hits.filter((h) => RELEVANT.test(h.title))) {
       const discuss = `https://news.ycombinator.com/item?id=${h.objectID}`;
       add({ title: strip(h.title), url: h.url || discuss, discuss, date: h.created_at_i * 1000, desc: h.story_text ? cut(strip(h.story_text), 300) : '', source: 'Hacker News', section: 'social', team: 'both', kind: 'news', score: h.points, scoreLabel: `${compact(h.points)} points on Hacker News`, comments: h.num_comments, relevant: RELEVANT.test(h.title) });
     }
@@ -156,6 +157,9 @@ const BRIEF = `You are the editor of Monks News, the morning brief that designer
 - Dev Monks (team "dev"): AI engineering (agents, custom LLM solutions, RAG, automation); SaaS platforms (multi-tenant, portals, MVPs, backend and APIs); mobile apps (iOS, Android, cross-platform).
 - Client industries: FinTech, EdTech, travel, fitness, health, FMCG, SaaS startups.
 
+The issue covers exactly three topics: (1) UI/UX and product design (Figma and design tools, design systems, UX research and usability, accessibility, interaction and motion, typography, branding and identity, design inspiration), (2) front-end, web and app development (CSS, HTML, JavaScript/TypeScript, React/Next.js and other UI frameworks, browsers, Webflow/Framer builds, iOS/Android/cross-platform UI), and (3) AI that changes how products are designed and built (new models from the main labs, AI design tools, AI coding tools and agents such as Cursor, Claude Code, v0, Lovable, Figma AI, Google Stitch, and AI features inside products).
+Leave out everything else, even if it is popular: backend and infrastructure engineering, DevOps, databases, data engineering, security incidents and vulnerabilities, enterprise architecture write-ups, legal and policy, hardware and chips, business, funding and stock news, gaming. A story qualifies only if a product designer or a front-end/app developer would find it directly useful in their own work this week.
+Balance (count the stories): at least 7 design stories (design-ux, branding, inspiration together, design-ux at least 4), at least 6 development stories that are front-end, web or app UI work, and at least 5 AI stories (industry, ai-engineering and AI tools together). Every tool you rate is a design tool, a front-end/app development tool or an AI tool for designing or building.
 Pick the hottest and most USEFUL items from the candidates. The test for every story: would a designer or developer here do something differently today because they read it? Skip business gossip, stock moves, politics, lawsuits and announcements with nothing to try, unless they truly change the work. Prefer the newest items (last 24 hours), items with high scores, items covered by several outlets ("outlets") and items trending on GitHub. Cover news from anywhere in the world, not one country. Use ONLY facts in the candidate text; never invent numbers, dates, quotes or features. If a claim is a vendor claim, say so. Plain, specific sentences, sentence-case headlines, no hype words, no emoji. The two agencies are one company: never write the names "Design Monks" or "Dev Monks" in any text; say "designers", "developers" or "the team". Never mention publishing times.
 
 Sections: industry (AI industry news), design-ux (product design and UX), branding (branding and identity), development (web, mobile and SaaS), ai-engineering (agents, LLM APIs, RAG, automation), tools (new AI tools), trends (trends to watch), inspiration (design inspiration), open-source (GitHub and open source), social (what designers and devs are discussing), learning (guides worth the time), opportunities (client demand, awards, events), experiment (one hands-on task for today, based on a story).`;
@@ -198,7 +202,7 @@ async function writeWithGemini(cands) {
   const key = process.env.GEMINI_API_KEY;
   if (!key) { log('GEMINI_API_KEY not set'); return null; }
   const lines = cands.map((c) => JSON.stringify({ cid: c.cid, source: c.source, kind: c.kind, title: c.title, text: c.desc, age_hours: Math.max(0, Math.round((now - c.date) / H)), score: c.scoreLabel || undefined, outlets: c.coverage > 1 ? c.coverage : undefined, hint: `${c.section}/${c.team}` }));
-  const prompt = `${BRIEF}\n\nToday in Dhaka is ${TODAY}.\n\n${SHAPE}\n\nCandidates (one JSON object per line):\n${lines.join('\n')}`;
+  let prompt = `${BRIEF}\n\nToday in Dhaka is ${TODAY}.\n\n${SHAPE}\n\nCandidates (one JSON object per line):\n${lines.join('\n')}`;
   for (const model of await geminiModels(key)) {
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
@@ -213,7 +217,14 @@ async function writeWithGemini(cands) {
         const data = await r.json();
         const raw = data?.candidates?.[0]?.content?.parts?.map((p) => p.text || '').join('') ?? '';
         const json = JSON.parse(raw.replace(/^```(?:json)?\s*|\s*```$/g, ''));
-        if (Array.isArray(json.stories) && json.stories.length >= 8) return json;
+        if (Array.isArray(json.stories) && json.stories.length >= 8) {
+          const n = (secs) => json.stories.filter((x) => secs.includes(x.section)).length;
+          const short = [n(['design-ux', 'branding', 'inspiration']) < 7 && 'design', n(['development']) < 5 && 'development', n(['industry', 'ai-engineering', 'tools']) < 5 && 'AI'].filter(Boolean);
+          if (!short.length || attempt === 3) { if (short.length) log(`${model}: still short on ${short.join(', ')}; using it`); return json; }
+          log(`${model}: too few ${short.join(', ')} stories; asking again`);
+          prompt = prompt.replace(/\n\nNOTE:.*$/s, '') + `\n\nNOTE: your last draft had too few ${short.join(' and ')} stories. Replace off-topic or weaker picks with ${short.join(' and ')} items from the candidates.`;
+          continue;
+        }
         log(`${model}: too few stories (${json.stories?.length ?? 0})`);
       } catch (e) { log(`${model}: ${e.message}`); await sleep(5000); }
     }

@@ -10,7 +10,8 @@
     "validate": "node scripts/validate.mjs"
   },
   "dependencies": {
-    "astro": "5.18.2"
+    "astro": "5.18.2",
+    "nodemailer": "^6.9.16"
   },
   "devDependencies": {
     "fast-xml-parser": "^4.5.3"

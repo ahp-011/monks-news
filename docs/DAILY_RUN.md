@@ -34,3 +34,13 @@ It runs by itself in **GitHub Actions** (`.github/workflows/daily.yml`). Nobody 
 - Re-make today's issue: GitHub → Actions → Daily issue → Run workflow, tick **Rewrite today's issue**.
 - Add or remove a source: edit `scripts/daily/sources.mjs`.
 - Run locally: `GEMINI_API_KEY=... node scripts/daily/publish.mjs`.
+
+## The morning email (DM Bytes in the inbox)
+
+After a new issue is published, the same run records the paper turning its pages (`scripts/email/flip.cjs`), builds a Gmail-safe broadsheet email (`scripts/email/build.mjs`) and sends one copy to each person (`scripts/email/send.mjs`). It sends from **aman@designmonks.co** and is off until these are set in GitHub → Settings → Secrets and variables → Actions:
+
+- Secret `MAIL_APP_PASSWORD`: a Google app password for aman@designmonks.co (Google Account → Security → 2-Step Verification → App passwords).
+- Secret `MAIL_TO`: the team's addresses, one per line or comma separated.
+- Variable `MAIL_FROM` (optional): to send from a different address later.
+
+Backup runs that find the issue already published do not send again.

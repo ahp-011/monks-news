@@ -19,7 +19,7 @@ const storyUrl = (id) => `${issueUrl}#${id}`;
 const SECTIONS = [['industry', 'AI industry'], ['design-ux', 'Design & UX'], ['branding', 'Branding'], ['development', 'Development'], ['ai-engineering', 'AI engineering'], ['tools', 'New tools'], ['trends', 'Trends'], ['inspiration', 'Inspiration'], ['open-source', 'Open source'], ['social', 'Social'], ['learning', 'Learning'], ['opportunities', 'Opportunities'], ['experiment', "Today's experiment"]];
 
 // palette: newsprint and ink, with the paper's orange
-const C = { table: '#E7E3DB', paper: '#F3EFE7', ink: '#1F1C19', soft: '#5B554D', rule: '#CFC8BB', orange: '#E8541E' };
+const C = { table: '#E7E3DB', paper: '#F3EFE7', ink: '#1F1C19', soft: '#4A453E', rule: '#CFC8BB', orange: '#E8541E' };
 const SERIF = "Georgia, 'Times New Roman', Times, serif";
 const SANS = "'Arial Black', 'Helvetica Neue', Arial, sans-serif";
 const BODY = "Arial, 'Helvetica Neue', Helvetica, sans-serif";
@@ -60,7 +60,7 @@ const tools = [...issue.tools].sort((a, b) => b.rating - a.rating).map((t) => `
     </tr></table>
   </td></tr>`).join('');
 
-const button = (href, text, dark) => `<a href="${href}" style="display:inline-block;padding:14px 22px;font:bold 15px/1 ${BODY};text-decoration:none;border-radius:4px;${dark ? `background:${C.ink};color:${C.paper}` : `background:transparent;color:${C.ink};border:2px solid ${C.ink}`}">${text}</a>`;
+const button = (href, text, dark) => `<table role="presentation" cellpadding="0" cellspacing="0" style="display:inline-table;margin:4px"><tr><td ${dark ? `bgcolor="${C.ink}"` : ''} style="border:2px solid ${C.ink};border-radius:4px;${dark ? `background:${C.ink}` : ''}"><a href="${href}" style="display:inline-block;padding:13px 22px;font:bold 15px/1 ${BODY};text-decoration:none;color:${dark ? C.paper : C.ink}">${text}</a></td></tr></table>`;
 
 const preheader = `${lead.title} · plus ${issue.brief.length - 1} more things to know today.`;
 const html = `<!doctype html>
@@ -71,8 +71,8 @@ const html = `<!doctype html>
 </head>
 <body style="margin:0;padding:0;background:${C.table}">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:${C.table}">${e(preheader)}</div>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.table}"><tr><td align="center" style="padding:24px 10px">
-<table role="presentation" class="wrap" width="640" cellpadding="0" cellspacing="0" style="width:640px;background:${C.paper};border:1px solid #D6D0C4">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${C.table}" style="background:${C.table}"><tr><td align="center" bgcolor="${C.table}" style="padding:24px 10px">
+<table role="presentation" class="wrap" width="640" cellpadding="0" cellspacing="0" bgcolor="${C.paper}" style="width:640px;background:${C.paper};border:1px solid #D6D0C4">
   <tr><td class="pad" style="padding:30px 36px 10px">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
       <tr><td style="font:bold 11px/1 ${MONO};letter-spacing:2px;text-transform:uppercase;color:${C.soft};padding-bottom:14px">Monks News &middot; The paper edition</td></tr>
@@ -93,7 +93,7 @@ const html = `<!doctype html>
     <a href="${paperUrl}" style="text-decoration:none"><img src="${gif}" width="560" alt="Today's DM Bytes paper turning its pages. Tap to read it." style="display:block;width:100%;max-width:560px;height:auto;border:0;background:${C.table}"></a>
   </td></tr>
   <tr><td class="pad" style="padding:14px 36px 4px" align="center">
-    ${button(paperUrl, 'Turn the pages &rarr;', true)}&nbsp;&nbsp;${button(issueUrl, 'Read on the website', false)}
+    ${button(paperUrl, 'Turn the pages &rarr;', true)}${button(issueUrl, 'Read on the website', false)}
   </td></tr>
 
   <tr><td class="pad" style="padding:28px 36px 0">
@@ -108,10 +108,12 @@ const html = `<!doctype html>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${inBrief}</table>
   </td></tr>
 
-  ${issue.dontMiss.length ? `<tr><td class="pad" style="padding:22px 36px 0">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.ink}"><tr><td style="padding:18px 20px">
-      <div style="font:bold 11px/1 ${MONO};letter-spacing:2px;text-transform:uppercase;color:${C.orange};margin-bottom:10px">Don't miss today</div>
-      ${issue.dontMiss.map((d, i) => `<div style="font:15px/1.45 ${SERIF};color:${C.paper};margin-top:${i ? 8 : 0}px">${i + 1}. ${e(d)}</div>`).join('')}
+  ${issue.dontMiss.length ? `<tr><td class="pad" style="padding:24px 36px 0">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#E9E2D3" style="background:#E9E2D3;border-left:5px solid ${C.orange}"><tr><td bgcolor="#E9E2D3" style="padding:18px 20px">
+      <div style="font:bold 12px/1 ${MONO};letter-spacing:2px;text-transform:uppercase;color:#B23C10;margin-bottom:12px">Don't miss today</div>
+      ${issue.dontMiss.map((d, i) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:${i ? 10 : 0}px"><tr>
+        <td width="26" valign="top" style="font:900 16px/1.4 ${SANS};color:${C.ink}">${i + 1}</td>
+        <td valign="top" style="font:16px/1.45 ${SERIF};color:${C.ink}">${e(d)}</td></tr></table>`).join('')}
     </td></tr></table>
   </td></tr>` : ''}
 

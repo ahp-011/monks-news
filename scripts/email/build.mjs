@@ -25,14 +25,14 @@ const SANS = "'Arial Black', 'Helvetica Neue', Arial, sans-serif";
 const BODY = "Arial, 'Helvetica Neue', Helvetica, sans-serif";
 const MONO = "'Courier New', Courier, monospace";
 const kick = (t) => `<div style="font:bold 11px/1 ${MONO};letter-spacing:2px;text-transform:uppercase;color:${C.soft};margin:0 0 10px">${t}</div>`;
-const rule = (h = 1, c = C.ink) => `<tr><td style="padding:0"><div style="height:${h}px;line-height:${h}px;font-size:0;background:${c}">&nbsp;</div></td></tr>`;
+const rule = (h = 1, c = C.ink) => `<tr><td bgcolor="${c}" style="padding:0;height:${h}px;line-height:${h}px;font-size:0;background:${c}">&nbsp;</td></tr>`;
 
 const stories = issue.stories;
 const lead = stories.find((s) => s.featured) ?? stories[0];
 const inBrief = issue.brief.map((b, i) => `
   <tr><td style="padding:12px 0;border-top:1px solid ${C.rule}">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-      <td width="34" valign="top" style="font:bold 12px/20px ${MONO};color:${C.orange}">0${i + 1}</td>
+      <td width="34" valign="top" style="font:bold 12px/20px ${MONO};color:#B23C10">0${i + 1}</td>
       <td valign="top"><a href="${storyUrl(b.story)}" style="text-decoration:none;color:${C.ink}"><div style="font:bold 17px/1.25 ${BODY};color:${C.ink}">${e(b.title)}</div></a>
         <div style="font:15px/1.45 ${SERIF};color:${C.soft};margin-top:3px">${e(b.text)}</div></td>
     </tr></table>
@@ -130,7 +130,7 @@ const html = `<!doctype html>
     ${button(paperUrl, 'Read today&#39;s paper &rarr;', true)}
   </td></tr>
   <tr><td class="pad" style="padding:22px 36px 30px">
-    ${rule(1, C.rule).replace('<tr><td style="padding:0">', '').replace('</td></tr>', '')}
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rule(1, C.rule)}</table>
     <div style="font:13px/1.5 ${BODY};color:${C.soft};margin-top:14px">DM Bytes is the paper edition of <a href="${base}" style="color:${C.ink}">Monks News</a>, the day's design, development and AI news for the Monks team. To stop getting it, reply to this email.</div>
   </td></tr>
 </table>
